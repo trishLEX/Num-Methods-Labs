@@ -1,7 +1,7 @@
-package com.bmstu;
+package ru.bmstu.NumMethodsLabs;
 
 public class Spline {
-    private static final int N = 20;    //N - количество точек => N - 1 - количество интервалов
+    private static final int N = 10;    //N - количество точек => N - 1 - количество интервалов
     private static final double A = 0;
     private static final double B = 1;
 
@@ -77,10 +77,13 @@ public class Spline {
         System.out.println();
         System.out.println(countAt(0.25, xs, aRes, bRes, cRes, dRes));
 
-        for (double i = 0; i < 1; i += (double)1 / 40) {
+        for (double p: xs)
+            System.out.println(countAt(p, xs, aRes, bRes, cRes, dRes) + " " + Math.abs(countAt(p, xs, aRes, bRes, cRes, dRes) - Math.exp(p)));
+
+        for (double i = 0; i < 1; i += (double)1 / 20) {
             double e = Math.exp(i);
             double eRes = countAt(i, xs, aRes, bRes, cRes, dRes);
-            System.out.println("x = " + i + "| y(x) = " + e + "| S(x) = " + eRes + "| y(x) - S(x) " + (e - eRes));
+            System.out.println("x = " + i + "| y(x) = " + e + "| S(x) = " + eRes + "| y(x) - S(x) " + Math.abs(e - eRes));
         }
     }
 

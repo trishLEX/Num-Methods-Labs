@@ -1,4 +1,4 @@
-package com.bmstu;
+package ru.bmstu.NumMethodsLabs;
 
 public class Main {
     private static final int N = 3;

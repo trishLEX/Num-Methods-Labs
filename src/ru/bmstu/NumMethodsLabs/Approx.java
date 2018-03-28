@@ -1,9 +1,7 @@
-package com.bmstu;
+package ru.bmstu.NumMethodsLabs;
 
 public class Approx {
     private static final int N = 10;
-    private static final int A = 0;
-    private static final int B = 1;
 
     public static void main(String[] args) {
         double[] x = new double[N];
