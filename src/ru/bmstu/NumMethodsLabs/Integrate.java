@@ -11,12 +11,12 @@ public class Integrate {
 
         double IbyCentralRects  = centralRects(N);
         double IbyCentralRects2 = centralRects(N * 2);
-        double R = Math.abs(IbyCentralRects2 - IbyCentralRects) / 3;
+        double R = (IbyCentralRects2 - IbyCentralRects) / 3;
         int n;
-        for (n = 4; R > E; n *= 2) {
+        for (n = 4; Math.abs(R) > E; n *= 2) {
             IbyCentralRects  = centralRects(n);
             IbyCentralRects2 = centralRects(n * 2);
-            R = Math.abs(IbyCentralRects2 - IbyCentralRects) / 3;
+            R = (IbyCentralRects2 - IbyCentralRects) / 3;
         }
 
         System.out.println("By central rects I* = " + IbyCentralRects2 + " error = " + Math.abs(ideal - IbyCentralRects2)
@@ -24,15 +24,15 @@ public class Integrate {
 
         double IbyTrapeze  = trapeze(N);
         double IbyTrapeze2 = trapeze(N * 2);
-        R = Math.abs(IbyTrapeze2 - IbyTrapeze) / 3;
-        for (n = 4; R > E; n *= 2) {
+        R = (IbyTrapeze2 - IbyTrapeze) / 3;
+        for (n = 4; Math.abs(R) > E; n *= 2) {
             IbyTrapeze  = trapeze(n);
             IbyTrapeze2 = trapeze(n * 2);
-            R = Math.abs(IbyTrapeze2 - IbyTrapeze) / 3;
+            R = (IbyTrapeze2 - IbyTrapeze) / 3;
         }
 
-        System.out.println("By trapeze I* = " + IbyTrapeze2 + " error = " + Math.abs(ideal - IbyTrapeze2)
-                + " N = " + n + " I* + R = " + (IbyTrapeze2 + R) + " errorR = " + Math.abs(IbyTrapeze + R - ideal));
+        System.out.println("By trapeze       I* = " + IbyTrapeze2 + " error = " + Math.abs(ideal - IbyTrapeze2)
+                + " N = " + n + " I* + R = " + (IbyTrapeze2 + R) + " errorR = " + Math.abs(IbyTrapeze2 + R - ideal));
 
         System.out.println("Ideal I = " + ideal);
     }
