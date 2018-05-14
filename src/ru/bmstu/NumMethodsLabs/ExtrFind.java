@@ -62,7 +62,7 @@ public class ExtrFind {
         double[] xNext = sub(xPrev, mul(invertMatrix(G), g));
 
         while (Math.max(Math.abs(xNext[0] - xPrev[0]), Math.abs(xNext[1] - xPrev[0])) > E) {
-            xPrev = xNext.clone();
+            xPrev = xNext;
             xNext = sub(xPrev, mul(invertMatrix(G), g));
             G[0][0] = derivFxx(xNext);
             G[1][0] = G[0][1] = derivFxy(xNext);
