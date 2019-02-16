@@ -1,4 +1,4 @@
-package ru.bmstu.NumMethodsLabs;
+package ru.bmstu.nummethodslabs;
 
 public class MinFind {
     private static double E = 0.01;

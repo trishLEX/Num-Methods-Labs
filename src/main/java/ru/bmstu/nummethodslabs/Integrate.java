@@ -1,4 +1,4 @@
-package ru.bmstu.NumMethodsLabs;
+package ru.bmstu.nummethodslabs;
 
 public class Integrate {
     private static final int N = 2;

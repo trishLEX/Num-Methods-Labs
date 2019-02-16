@@ -1,4 +1,4 @@
-package ru.bmstu.NumMethodsLabs;
+package ru.bmstu.nummethodslabs;
 
 public class Spline {
     private static final int N = 10;    //N - количество точек => N - 1 - количество интервалов
