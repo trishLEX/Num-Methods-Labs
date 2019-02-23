@@ -1,4 +1,4 @@
-package ru.bmstu.mathmodeling;
+package ru.bmstu.mathmodeling.lab1;
 
 import ru.bmstu.common.Drawer;
 
@@ -12,10 +12,11 @@ public class BallisticTask {
     private static final double RADIUS = 1;
     private static final double DT = 0.01;
     private static final double BETA = 0.5 * 0.15 * 4 * RADIUS * RADIUS * Math.PI * 1.29;
+    private static final double DENSITY = 11340;
 
     public static void main(String[] args) {
-        Galileo();
-        Newton(BETA, 11340);
+        galileo();
+        newton(BETA, DENSITY);
     }
 
     private static double x(double t) {
@@ -26,7 +27,7 @@ public class BallisticTask {
         return V_0 * Math.sin(ALPHA) * t - G * t * t / 2;
     }
 
-    private static void Galileo() {
+    private static void galileo() {
         double t = 0;
         double x = 0;
         double y = 0;
@@ -54,9 +55,9 @@ public class BallisticTask {
         xs.add(x);
         ys.add(0.0);
 
-        System.out.println(x);
+        System.out.println("Galileo: " + x);
 
-        Drawer drawer = new Drawer("Galileo", xs, ys, "x", "y");
+        Drawer drawer = new Drawer("galileo", xs, ys, "x", "y");
         drawer.draw();
     }
 
@@ -68,7 +69,7 @@ public class BallisticTask {
         return (- G - beta * speedY * Math.sqrt(Math.pow(speedX, 2) + Math.pow(speedY, 2)) / m);
     }
 
-    private static void Newton(double beta, double density) {
+    private static void newton(double beta, double density) {
         double x = 0;
         double y = 0;
         double speedX = V_0 * Math.cos(ALPHA);
@@ -122,9 +123,9 @@ public class BallisticTask {
         xs.add(x);
         ys.add(0.0);
 
-        System.out.println(x);
+        System.out.println("Newton:  " + x);
 
-        Drawer drawer = new Drawer("Newton", xs, ys, "x", "y");
+        Drawer drawer = new Drawer("newton", xs, ys, "x", "y");
         drawer.draw();
     }
 
