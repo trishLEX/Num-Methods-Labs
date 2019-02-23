@@ -1,6 +1,6 @@
 package ru.bmstu.mathmodeling.lab1;
 
-import ru.bmstu.common.Drawer;
+import ru.bmstu.common.Plotter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +57,8 @@ public class BallisticTask {
 
         System.out.println("Galileo: " + x);
 
-        Drawer drawer = new Drawer("galileo", xs, ys, "x", "y");
-        drawer.draw();
+        Plotter plotter = new Plotter("galileo", xs, ys, "x", "y");
+        plotter.draw();
     }
 
     private static double speedX(double beta, double m, double speedX, double speedY) {
@@ -125,8 +125,8 @@ public class BallisticTask {
 
         System.out.println("Newton:  " + x);
 
-        Drawer drawer = new Drawer("newton", xs, ys, "x", "y");
-        drawer.draw();
+        Plotter plotter = new Plotter("newton", xs, ys, "x", "y");
+        plotter.draw();
     }
 
     private static double interpolateY(double y1, double y2, double x1, double x2) {

@@ -1,13 +1,15 @@
 package ru.bmstu.mathmodeling.lab2;
 
+import ru.bmstu.common.TriangleDrawer;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
 public class Main {
-    private static final int K = 10;
-    private static final int N = 3;
+    private static final int K = 9;
+    private static final int N = 50;
 
     public static void main(String[] args) {
         int[] coords = new Random().ints(N * 2, 0, 1 << K).toArray();
@@ -15,20 +17,21 @@ public class Main {
         for (int i = 0; i < coords.length; i += 2) {
             points.add(new Point(coords[i], coords[i + 1]));
         }
+//        points.add(new Point(505, 344));
+//        points.add(new Point(157, 480));
+//        points.add(new Point(50, 345));
+//        points.add(new Point(38, 155));
+
+        points.sort(Comparator.comparingLong(Point::getZCode));
 
         System.out.println(points);
-    }
 
-    public static void triangulate(List<Point> points) {
-        points.sort(Comparator.comparingLong(Point::getZCode));
-        List<Triangle> triangles = new ArrayList<>();
+        Triangulation triangulation = new Triangulation();
+        triangulation.triangulate(points);
 
-        triangles.add(new Triangle(points.get(0), points.get(1), points.get(2)));
+        System.out.println(triangulation.getCircles());
 
-        if (points.size() > 3) {
-            for (int i = 3; i < points.size(); i++) {
-
-            }
-        }
+        TriangleDrawer drawer = new TriangleDrawer(triangulation.getTriangles(), triangulation.getCircles());
+        drawer.draw();
     }
 }

@@ -1,60 +1,50 @@
 package ru.bmstu.common;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
+import org.lwjgl.glfw.*;
 
-import java.awt.*;
-import java.util.List;
+import org.lwjgl.opengl.GL;
 
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
 
-public class Drawer extends ApplicationFrame {
-    public Drawer(
-            String title,
-            List<Double> xArray,
-            List<Double> yArray,
-            String xLabel,
-            String yLabel
-    ) {
-        super(title);
+public abstract class Drawer {
+    protected static final double[] GRAY  = {0.8, 0.8, 0.8};
+    protected static final double[] BLACK = {0.0, 0.0, 0.0};
+    protected static final double[] WHITE = {1.0, 1.0, 1.0};
 
-        XYSeries series = new XYSeries(title, false, true);
-        for (int i = 0; i < yArray.size(); i++) {
-            series.add(xArray.get(i), yArray.get(i));
-        }
+    protected long window;
 
-        XYDataset data = new XYSeriesCollection(series);
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                title,
-                xLabel,
-                yLabel,
-                data,
-                PlotOrientation.VERTICAL,
-                false,
-                false,
-                false
-        );
-
-        ChartPanel panel = new ChartPanel(chart);
-        panel.setPreferredSize(new Dimension(640, 480));
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer( );
-        renderer.setSeriesLinesVisible(0, true);
-        renderer.setSeriesShapesVisible(0, false);
-        renderer.setSeriesStroke(0, new BasicStroke(2.0f));
-        chart.getXYPlot().setRenderer(renderer);
-        setContentPane(panel);
+    protected void background() {
+        glClearColor(1, 1, 1, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
     }
 
-    public void draw() {
-        pack();
-        RefineryUtilities.centerFrameOnScreen(this);
-        setVisible(true);
+    public Drawer(int width, int height, String name) {
+        GLFWErrorCallback.createPrint(System.err).set();
+
+        if (!glfwInit())
+            throw new IllegalStateException("Unable to initialize GLFW");
+
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+        this.window = GLFW.glfwCreateWindow(width, height, name, 0, 0);
+
+        if (window == 0) {
+            throw new RuntimeException("Failed to create window");
+        }
+
+        GLFW.glfwMakeContextCurrent(window);
+
+        GL.createCapabilities();
+    }
+
+    public void draw(){
+        while (!GLFW.glfwWindowShouldClose(this.window)) {
+            background();
+
+            GLFW.glfwSwapBuffers(this.window);
+            GLFW.glfwPollEvents();
+        }
     }
 }

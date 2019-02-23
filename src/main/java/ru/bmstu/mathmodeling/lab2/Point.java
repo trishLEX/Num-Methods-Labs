@@ -37,6 +37,10 @@ public class Point {
         return (byte) ((num >> position) & 1);
     }
 
+    public double getDistance(Point other) {
+        return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
     @Override
     public String toString() {
         return "Point{" +
@@ -44,5 +48,49 @@ public class Point {
                 ", y=" + y +
                 ", zCode=" + zCode +
                 '}';
+    }
+
+    public static Point maxX(Point point, Point ... points) {
+        Point max = point;
+        for (Point p : points) {
+            if (p.x > max.x) {
+                max = p;
+            }
+        }
+
+        return max;
+    }
+
+    public static Point minX(Point point, Point ... points) {
+        Point min = point;
+        for (Point p : points) {
+            if (p.x < min.x) {
+                min = p;
+            }
+        }
+
+        return min;
+    }
+
+    public static Point maxY(Point point, Point ... points) {
+        Point max = point;
+        for (Point p : points) {
+            if (p.y > max.y) {
+                max = p;
+            }
+        }
+
+        return max;
+    }
+
+    public static Point minY(Point point, Point ... points) {
+        Point min = point;
+        for (Point p : points) {
+            if (p.y < min.y) {
+                min = p;
+            }
+        }
+
+        return min;
     }
 }
