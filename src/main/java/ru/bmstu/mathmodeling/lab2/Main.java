@@ -9,29 +9,54 @@ import java.util.Random;
 
 public class Main {
     private static final int K = 9;
-    private static final int N = 50;
+    private static final int N = 7;
+
+    public static final int WINDOW_SIZE = 720;
+    public static final Environment ENVIRONMENT = Environment.DEVELOPMENT;
 
     public static void main(String[] args) {
-        int[] coords = new Random().ints(N * 2, 0, 1 << K).toArray();
-        List<Point> points = new ArrayList<>();
-        for (int i = 0; i < coords.length; i += 2) {
-            points.add(new Point(coords[i], coords[i + 1]));
+        int fieldsCount = 1;
+        for (int i = 1; fieldsCount < N; i++) {
+            fieldsCount = (int) Math.pow(i, 2);
         }
-//        points.add(new Point(505, 344));
-//        points.add(new Point(157, 480));
-//        points.add(new Point(50, 345));
-//        points.add(new Point(38, 155));
+        boolean[] isFilledField = new boolean[fieldsCount];
+        for (int i = 0; i < fieldsCount; i++) {
+            isFilledField[i] = false;
+        }
 
-        points.sort(Comparator.comparingLong(Point::getZCode));
+        int count = 0;
+        Random random = new Random();
+        List<Point> points = new ArrayList<>();
+        while (count < N) {
+            int i = random.nextInt(fieldsCount);
+            if (!isFilledField[i]) {
+                isFilledField[i] = true;
 
-        System.out.println(points);
+                int size = (int) Math.sqrt(fieldsCount);
+                int xBound = i % size;
+                int yBound = i / size;
 
+                int xLowBound = WINDOW_SIZE / size * xBound;
+                int xHighBound = WINDOW_SIZE / size * (xBound + 1);
+
+                int yLowBound = WINDOW_SIZE / size * yBound;
+                int yHighBound = WINDOW_SIZE / size * (yBound + 1);
+
+                points.add(new Point(xLowBound + random.nextInt(xHighBound - xLowBound), yLowBound + random.nextInt(yHighBound - yLowBound)));
+                count++;
+            }
+        }
+
+        showTriangulation(points);
+    }
+
+    public static void showTriangulation(List<Point> points) {
         Triangulation triangulation = new Triangulation();
         triangulation.triangulate(points);
 
         System.out.println(triangulation.getCircles());
 
-        TriangleDrawer drawer = new TriangleDrawer(triangulation.getTriangles(), triangulation.getCircles());
+        TriangleDrawer drawer = new TriangleDrawer(WINDOW_SIZE, WINDOW_SIZE, triangulation.getTriangles(), triangulation.getCircles(), points);
         drawer.draw();
     }
 }

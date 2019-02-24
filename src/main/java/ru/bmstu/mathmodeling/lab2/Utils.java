@@ -71,4 +71,8 @@ public class Utils {
 
         return new double[]{centerX, centerY};
     }
+
+    public static double[] getCircumcenter(Triangle triangle) {
+        return getCircumcenter(triangle.getFirst(), triangle.getSecond(), triangle.getThird());
+    }
 }

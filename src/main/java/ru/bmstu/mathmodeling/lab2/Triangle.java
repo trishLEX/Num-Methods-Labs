@@ -1,5 +1,7 @@
 package ru.bmstu.mathmodeling.lab2;
 
+import java.util.Arrays;
+
 public class Triangle {
     private static final int SIZE = 3;
     private Point[] points;
@@ -44,5 +46,15 @@ public class Triangle {
         } else {
             return false;
         }
+    }
+    public boolean contains(Point point) {
+        return points[0].equals(point) || points[1].equals(point) || points[2].equals(point);
+    }
+
+    @Override
+    public String toString() {
+        return "Triangle{" +
+                "points=" + Arrays.toString(points) +
+                '}';
     }
 }

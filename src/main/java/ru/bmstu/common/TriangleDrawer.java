@@ -3,32 +3,47 @@ package ru.bmstu.common;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import ru.bmstu.mathmodeling.lab2.Circle;
+import ru.bmstu.mathmodeling.lab2.Point;
 import ru.bmstu.mathmodeling.lab2.Triangle;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static ru.bmstu.mathmodeling.lab2.Main.WINDOW_SIZE;
 
 public class TriangleDrawer extends Drawer {
     private static final int NUMBER_OF_SIDES = 50;
+    private static final double POINT_SIZE = 0.01;
+    private static final double SIZE = WINDOW_SIZE / 2.0;
 
     private List<Triangle> triangles;
     private List<Circle> circles;
+    private List<Point> points;
 
     private boolean toDrawCircles;
+    private boolean toDrawRedCircles;
+    private boolean toDrawPoints;
 
-    public TriangleDrawer(List<Triangle> triangles, List<Circle> circles) {
-        super(720, 720, "triangles");
+    public TriangleDrawer(int width, int height, List<Triangle> triangles, List<Circle> circles, List<Point> points) {
+        super(width, height, "triangles");
 
         this.triangles = triangles;
         this.circles = circles;
+        this.points = points;
 
         toDrawCircles = false;
+        toDrawRedCircles = false;
+        toDrawPoints = false;
 
-        glfwSetKeyCallback(window, GLFWKeyCallback.create(((window1, key, scancode, action, mods) -> {
+        glfwSetKeyCallback(window, GLFWKeyCallback.create(((window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_C && action == GLFW_PRESS) {
                 toDrawCircles = !toDrawCircles;
+            } else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+                toDrawRedCircles = !toDrawRedCircles;
+            } else if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+                toDrawPoints = !toDrawPoints;
             }
         })));
     }
@@ -39,6 +54,10 @@ public class TriangleDrawer extends Drawer {
             background();
 
             drawTriangles();
+
+            if (toDrawPoints) {
+                drawPoints();
+            }
 
             if (toDrawCircles) {
                 drawCircles();
@@ -54,24 +73,40 @@ public class TriangleDrawer extends Drawer {
         glLineWidth(2);
         for (Triangle triangle : triangles) {
             glBegin(GL_LINE_LOOP);
-            glVertex2d((double) (triangle.getFirst().getX() - 360) / 720, (double) (triangle.getFirst().getY() - 360) / 720);
-            glVertex2d((double) (triangle.getSecond().getX() - 360) / 720, (double) (triangle.getSecond().getY() - 360) / 720);
-            glVertex2d((double) (triangle.getThird().getX() - 360) / 720, (double) (triangle.getThird().getY() - 360) / 720);
+            glVertex2d((triangle.getFirst().getX() - SIZE) / SIZE, (triangle.getFirst().getY() - SIZE) / SIZE);
+            glVertex2d((triangle.getSecond().getX() - SIZE) / SIZE, (triangle.getSecond().getY() - SIZE) / SIZE);
+            glVertex2d((triangle.getThird().getX() - SIZE) / SIZE, (triangle.getThird().getY() - SIZE) / SIZE);
             glEnd();
         }
     }
 
     private void drawCircles() {
-        glColor3dv(GRAY);
         glLineWidth(1);
         for (Circle circle : circles) {
-            glBegin(GL_LINE_LOOP);
-            for (int i = 0; i < NUMBER_OF_SIDES; i++) {
-                glVertex2d(
-                        (circle.getCenter()[0] - 360) / 720 + circle.getRadius() / 720 * Math.cos(i * Math.PI * 2 / NUMBER_OF_SIDES),
-                        (circle.getCenter()[1] - 360) / 720 + circle.getRadius() / 720 * Math.sin(i * Math.PI * 2 / NUMBER_OF_SIDES)
-                );
+            if (!(!toDrawRedCircles && Arrays.equals(circle.getColor(), RED))) {
+                glColor3dv(circle.getColor());
+                glBegin(GL_LINE_LOOP);
+                for (int i = 0; i < NUMBER_OF_SIDES; i++) {
+                    glVertex2d(
+                            (circle.getCenter()[0] - SIZE) / SIZE + circle.getRadius() / SIZE * Math.cos(i * Math.PI * 2 / NUMBER_OF_SIDES),
+                            (circle.getCenter()[1] - SIZE) / SIZE + circle.getRadius() / SIZE * Math.sin(i * Math.PI * 2 / NUMBER_OF_SIDES)
+                    );
+                }
+                glEnd();
             }
+        }
+    }
+
+    private void drawPoints() {
+        glColor3dv(RED);
+        for (Point point : points) {
+            double x = (point.getX() - 360) / SIZE;
+            double y = (point.getY() - 360) / SIZE;
+            glBegin(GL_POLYGON);
+            glVertex2d(x + POINT_SIZE, y + POINT_SIZE);
+            glVertex2d(x - POINT_SIZE, y + POINT_SIZE);
+            glVertex2d(x - POINT_SIZE, y - POINT_SIZE);
+            glVertex2d(x + POINT_SIZE, y - POINT_SIZE);
             glEnd();
         }
     }

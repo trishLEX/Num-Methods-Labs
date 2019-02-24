@@ -8,9 +8,9 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
 public abstract class Drawer {
-    protected static final double[] GRAY  = {0.8, 0.8, 0.8};
-    protected static final double[] BLACK = {0.0, 0.0, 0.0};
-    protected static final double[] WHITE = {1.0, 1.0, 1.0};
+    public static final double[] GRAY  = {0.8, 0.8, 0.8};
+    public static final double[] BLACK = {0.0, 0.0, 0.0};
+    public static final double[] RED = {1.0, 0.0, 0.0};
 
     protected long window;
 
