@@ -1,28 +1,67 @@
 package ru.bmstu.nummethodslabs;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class MinFind {
-    private static double E = 0.01;
-    private static double A = -3;
-    private static double B = 0;
-
-    private static Map<Integer, Integer> fibonacci = new HashMap<>();
+    private static final double E = 0.01;
+    private static final double A = -3;
+    private static final double B = 0;
+    private static final double X_0 = -13;
+    private static final double DELTA = 0.01;
 
     private static double f(double x) {
-        return x * x + 2 * x + 1;
+        return 5 * Math.pow(x, 6) - 36 * Math.pow(x, 5) - 165.0 / 2.0 *
+                Math.pow(x, 4) - 60 * Math.pow(x, 3) + 36;
     }
 
     public static void main(String[] args) {
-        double b = bisection(A, B, 0);
-        System.out.println("BISECTION: " + b + " error: " + Math.abs(b + 1.0));
-        double g = golden(A, B, 0);
-        System.out.println("GOLDEN: " + g + " error: " + Math.abs(g + 1.0));
-        double f = fibonacci(A, B);
-        System.out.println("FIBONACCI: " + f + " error: " + Math.abs(f + 1.0));
+        double[] segment = svenn(X_0, DELTA);
+        System.out.println("SVENN: " + Arrays.toString(segment));
+        double b = bisection(segment[0], segment[1], 0);
+        System.out.println("BISECTION: " + b + " error: " + Math.abs(b -
+                7.56001) + " min: " + f(b));
+        double g = golden(segment[0], segment[1], 0);
+        System.out.println("GOLDEN: " + g + " error: " + Math.abs(g -
+                7.56001) + " min: " + f(g));
+        double f = fibonacci(segment[0], segment[1]);
+        System.out.println("FIBONACCI: " + f + " error: " + Math.abs(f -
+                7.56001) + " min: " + f(f));
+    }
+
+    private static double[] svenn(double xPrev, double delta) {
+        double xCur;
+        if (f(xPrev + delta) < f(xPrev)) {
+            xCur = xPrev + delta;
+        } else if (f(xPrev - delta) < f(xPrev)) {
+            delta = -delta;
+            xCur = xPrev + delta;
+        } else {
+            return new double[]{xPrev - delta, xPrev + delta};
+        }
+
+        int k = 0;
+        int kMax = 100;
+        double xNext;
+        do {
+            k++;
+            delta = 2 * delta;
+            xNext = xCur + delta;
+            if (k > kMax) {
+                throw new IllegalStateException("Too many iterations");
+            }
+
+            double temp = xCur;
+            xCur = xNext;
+            xPrev = temp;
+        } while ((f(xPrev) > f(xCur)));
+
+        if (xPrev < xNext) {
+            return new double[]{xPrev, xNext};
+        } else {
+            return new double[]{xNext, xPrev};
+        }
     }
 
     private static double bisection(double a, double b, int n) {
