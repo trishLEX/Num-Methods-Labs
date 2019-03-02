@@ -6,8 +6,6 @@ import java.util.List;
 
 public class MinFind {
     private static final double E = 0.01;
-    private static final double A = -3;
-    private static final double B = 0;
     private static final double X_0 = -13;
     private static final double DELTA = 0.01;
 
@@ -97,7 +95,7 @@ public class MinFind {
         numbers.add(0.0);
         numbers.add(1.0);
 
-        while (numbers.get(numbers.size() - 1) < Math.abs(B - A) / E) {
+        while (numbers.get(numbers.size() - 1) < Math.abs(b - a) / E) {
             numbers.add(numbers.get(numbers.size() - 1) + numbers.get(numbers.size() - 2));
         }
 
@@ -129,6 +127,7 @@ public class MinFind {
             a = left;
         }
 
+        System.out.println("FIBONACCI: " + k);
         return (a + b) / 2.0;
     }
 }
