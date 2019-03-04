@@ -33,7 +33,7 @@ public class TriangulationTest {
         points.add(new Point(334, 660));
     }
 
-    @Test
+    @Test //BEST WITH OPTION = 1
     public void test5Points3() {
         points.add(new Point(332, 32));
         points.add(new Point(109, 279));
@@ -73,6 +73,16 @@ public class TriangulationTest {
         points.add(new Point(649, 489));
         points.add(new Point(115, 620));
         points.add(new Point(430, 701));
+    }
+    
+    @Test void test7Points4() {
+        points.add(new Point(317, 219));
+        points.add(new Point(93, 256));
+        points.add(new Point(264, 343));
+        points.add(new Point(294, 490));
+        points.add(new Point(662, 235));
+        points.add(new Point(667, 383));
+        points.add(new Point(546, 576));
     }
 
     @Test

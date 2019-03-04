@@ -1,7 +1,9 @@
 package ru.bmstu.mathmodeling.lab2;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static ru.bmstu.common.Drawer.RED;
 
@@ -64,6 +66,13 @@ public class Circle {
 
     public void setColor(double[] color) {
         this.color = color;
+    }
+
+    public List<Point> filterPointsInside(List<Point> points) {
+        return points
+                .stream()
+                .filter(p -> radius > Utils.getDistance(center[0], center[1], p.getX(), p.getY()))
+                .collect(Collectors.toList());
     }
 
     @Override

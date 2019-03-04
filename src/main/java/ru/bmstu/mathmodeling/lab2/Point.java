@@ -5,8 +5,8 @@ import java.util.Objects;
 import static ru.bmstu.mathmodeling.lab2.Main.ENVIRONMENT;
 
 public class Point {
-    private int x;
-    private int y;
+    private double x;
+    private double y;
     private long zCode;
 
     public Point(int x, int y) {
@@ -25,11 +25,20 @@ public class Point {
         }
     }
 
-    public int getX() {
+    public Point(double[] point) {
+        if (point.length != 2) {
+            throw new IllegalArgumentException("Wrong length of array");
+        }
+
+        this.x = point[0];
+        this.y = point[1];
+    }
+
+    public double getX() {
         return x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
@@ -48,7 +57,7 @@ public class Point {
     @Override
     public String toString() {
         if (ENVIRONMENT == Environment.DEVELOPMENT) {
-            return String.format("points.add(new Point(%d, %d));\n", x, y);
+            return String.format("points.add(new Point(%.2f, %.2f));\n", x, y);
         } else {
             return "Point{" +
                     "x=" + x +

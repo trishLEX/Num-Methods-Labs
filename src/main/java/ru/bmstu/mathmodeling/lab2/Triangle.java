@@ -1,10 +1,12 @@
 package ru.bmstu.mathmodeling.lab2;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Triangle {
     private static final int SIZE = 3;
     private Point[] points;
+    private Circle circumCircle;
 
     public Triangle(Point a, Point b, Point c) {
         points = new Point[SIZE];
@@ -47,8 +49,54 @@ public class Triangle {
             return false;
         }
     }
+
     public boolean contains(Point point) {
         return points[0].equals(point) || points[1].equals(point) || points[2].equals(point);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Triangle other = (Triangle) obj;
+        return other.contains(points[0]) && other.contains(points[1]) && other.contains(points[2]);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(points);
+    }
+
+    public List<Point> getClosestEdge(Point point) {
+        List<Point> closest = Arrays.asList(points[0], points[1]);
+        double min = Utils.getDistanceToSegment(point, points[0], points[1]);
+
+        double current = Utils.getDistanceToSegment(point, points[0], points[2]);
+        if (current < min) {
+            min = current;
+            closest = Arrays.asList(points[0], points[2]);
+        }
+
+        current = Utils.getDistanceToSegment(point, points[1], points[2]);
+        if (current < min) {
+            closest = Arrays.asList(points[1], points[2]);
+        }
+
+        return closest;
+    }
+
+    public void setCircumCircle(Circle circumCircle) {
+        this.circumCircle = circumCircle;
+    }
+
+    public Circle getCircumCircle() {
+        return circumCircle;
     }
 
     @Override
