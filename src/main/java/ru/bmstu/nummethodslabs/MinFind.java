@@ -1,31 +1,41 @@
 package ru.bmstu.nummethodslabs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 public class MinFind {
-    private static final double E = 0.01;
+    private static final double E = 0.001;
     private static final double X_0 = -13;
-    private static final double DELTA = 0.01;
+    private static final double DELTA = 3;
 
     private static double f(double x) {
         return 5 * Math.pow(x, 6) - 36 * Math.pow(x, 5) - 165.0 / 2.0 *
                 Math.pow(x, 4) - 60 * Math.pow(x, 3) + 36;
     }
 
+    private static double fDeriv(double x) {
+        return 30 * Math.pow(x, 5) - 36 * 5 * Math.pow(x, 4) - 165 * 2 * Math.pow(x, 3) - 180 * x * x;
+    }
+
     public static void main(String[] args) {
-        double[] segment = svenn(X_0, DELTA);
-        System.out.println("SVENN: " + Arrays.toString(segment));
-        double b = bisection(segment[0], segment[1], 0);
-        System.out.println("BISECTION: " + b + " error: " + Math.abs(b -
-                7.56001) + " min: " + f(b));
-        double g = golden(segment[0], segment[1], 0);
-        System.out.println("GOLDEN: " + g + " error: " + Math.abs(g -
-                7.56001) + " min: " + f(g));
-        double f = fibonacci(segment[0], segment[1]);
-        System.out.println("FIBONACCI: " + f + " error: " + Math.abs(f -
-                7.56001) + " min: " + f(f));
+//        double[] segment = svenn(X_0, DELTA);
+//        System.out.println("SVENN: " + Arrays.toString(segment));
+//        double b = bisection(segment[0], segment[1], 0);
+//        System.out.println("BISECTION: " + b + " error: " + Math.abs(b -
+//                7.56001) + " min: " + f(b));
+//        double g = golden(segment[0], segment[1], 0);
+//        System.out.println("GOLDEN: " + g + " error: " + Math.abs(g -
+//                7.56001) + " min: " + f(g));
+//        double f = fibonacci(segment[0], segment[1]);
+//        System.out.println("FIBONACCI: " + f + " error: " + Math.abs(f -
+//                7.56001) + " min: " + f(f));
+
+        Coordinate coordinate = quadraticInterpolation();
+        System.out.println(coordinate);
+        Coordinate coordinate1 = cubicInterpolation();
+        System.out.println(coordinate1);
     }
 
     private static double[] svenn(double xPrev, double delta) {
@@ -129,5 +139,207 @@ public class MinFind {
 
         System.out.println("FIBONACCI: " + k);
         return (a + b) / 2.0;
+    }
+
+    private static Coordinate coordinate(double x) {
+        return new Coordinate(x, f(x), fDeriv(x));
+    }
+
+    private static Coordinate quadraticInterpolation() {
+        List<Coordinate> interpolation = Lists.newArrayList(coordinate(X_0), coordinate(0.0), coordinate(0.0));
+        int k = 0;
+        double res = 0.0;
+
+        interpolation.set(1, coordinate(interpolation.get(0).x + DELTA));
+        interpolation.set(2, interpolation.get(0).y > interpolation.get(1).y ?
+                coordinate(interpolation.get(0).x + 2 * DELTA) :
+                coordinate(interpolation.get(0).x - DELTA));
+
+        while (true) {
+            Coordinate minValueCoord = min(interpolation);
+            double numerator = (Math.pow(interpolation.get(1).x, 2) - Math.pow(interpolation.get(2).x, 2)) * interpolation.get(0).y +
+                    (Math.pow(interpolation.get(2).x, 2) - Math.pow(interpolation.get(0).x, 2)) * interpolation.get(1).y +
+                    (Math.pow(interpolation.get(0).x, 2) - Math.pow(interpolation.get(1).x, 2)) * interpolation.get(2).y;
+
+            double denumerator = (interpolation.get(1).x - interpolation.get(2).x) * interpolation.get(0).y +
+                    (interpolation.get(2).x - interpolation.get(0).x) * interpolation.get(1).y +
+                    (interpolation.get(0).x - interpolation.get(1).x) * interpolation.get(2).y;
+
+            if (Double.compare(denumerator, 0.0) == 0) {
+                interpolation.set(0, coordinate(minValueCoord.x));
+                continue;
+            }
+
+            Coordinate minFromPolynom = coordinate(numerator / 2.0 / denumerator);
+            boolean belongs = interpolation.get(0).x <= minFromPolynom.x && minFromPolynom.x <= interpolation.get(2).x;
+            if (!belongs) {
+                interpolation.set(1, minFromPolynom);
+                interpolation.set(0, coordinate(interpolation.get(1).x - DELTA));
+                interpolation.set(2, coordinate(interpolation.get(1).x + DELTA));
+                continue;
+            }
+
+            boolean yError = Math.abs((minValueCoord.y - minFromPolynom.y) / minFromPolynom.y) < E;
+            boolean xError = Math.abs((minValueCoord.x - minFromPolynom.x) / minFromPolynom.y) < E;
+
+            if (xError && yError) {
+                res = minFromPolynom.x;
+                break;
+            }
+
+            k++;
+            int minIndex;
+            interpolation.add(minFromPolynom);
+            interpolation.sort(Coordinate::compareTo);
+            if (minValueCoord.y < minFromPolynom.y) {
+                minIndex = interpolation.indexOf(minValueCoord);
+            } else {
+                minIndex = interpolation.indexOf(minFromPolynom);
+            }
+
+            switch (minIndex) {
+                case 0:
+                    interpolation.remove(interpolation.size() - 1);
+                    interpolation.remove(interpolation.size() - 1);
+                    interpolation.add(0, coordinate(interpolation.get(0).x - DELTA));
+                    break;
+                case 1:
+                    interpolation.remove(interpolation.size() - 1);
+                    break;
+                case 2:
+                    interpolation.remove(0);
+                    break;
+                case 3:
+                    interpolation.remove(0);
+                    interpolation.remove(0);
+                    interpolation.add(coordinate(interpolation.get(interpolation.size() - 1).x - DELTA));
+                    break;
+                default:
+                    throw new IllegalStateException("BAD CASE");
+            }
+        }
+
+        return coordinate(res);
+    }
+
+    private static Coordinate min(List<Coordinate> coordinates) {
+        Coordinate min = coordinates.get(0);
+
+        for (int i = 1; i < coordinates.size(); i++) {
+            if (coordinates.get(i).y < min.y) {
+                min = coordinates.get(i);
+            }
+        }
+
+        return min;
+    }
+
+    private static Coordinate cubicInterpolation() {
+        Coordinate startCoord = coordinate(X_0);
+        List<Coordinate> interpolation = Lists.newArrayList(startCoord, startCoord, startCoord);
+        int k = 0;
+        double res = 0.0;
+
+        if (startCoord.derivValue < 0.0) {
+            do {
+                interpolation.set(0, interpolation.get(1));
+                interpolation.set(1, coordinate(interpolation.get(0).x + (1 << k) * DELTA));
+                k++;
+            } while (interpolation.get(0).derivValue * interpolation.get(1).derivValue >= 0);
+        } else {
+            do {
+                interpolation.set(0, interpolation.get(1));
+                interpolation.set(1, coordinate(interpolation.get(0).x - (1 << k) * DELTA));
+                k++;
+            } while (interpolation.get(0).derivValue * interpolation.get(1).derivValue >= 0);
+        }
+
+        k = 0;
+        while (true) {
+            double z = 3.0 * (interpolation.get(0).y - interpolation.get(1).y) / (interpolation.get(1).x - interpolation.get(0).x) +
+                    interpolation.get(0).derivValue + interpolation.get(1).derivValue;
+            double w = Math.sqrt(Math.pow(z, 2) - interpolation.get(0).derivValue * interpolation.get(1).derivValue);
+            w = interpolation.get(0).x < interpolation.get(1).x ? w : -w;
+
+            double mu = (interpolation.get(1).derivValue + w - z) /
+                    (interpolation.get(1).derivValue - interpolation.get(0).derivValue + 2.0 * w);
+
+            if (mu < 0) {
+                interpolation.set(2, interpolation.get(1));
+            } else if (mu > 1) {
+                interpolation.set(2, interpolation.get(0));
+            } else {
+                interpolation.set(2, coordinate(interpolation.get(1).x - mu * (interpolation.get(1).x - interpolation.get(0).x)));
+            }
+
+            while (interpolation.get(2).y > interpolation.get(0).y) {
+                interpolation.set(2, coordinate(interpolation.get(2).x - 0.5 * (interpolation.get(2).x - interpolation.get(0).x)));
+            }
+
+            boolean yError = Math.abs(interpolation.get(2).derivValue) < E;
+            boolean xError = Math.abs(interpolation.get(2).x - interpolation.get(0).x) / interpolation.get(2).x < E;
+            k++;
+
+            if (xError && yError) {
+                res = interpolation.get(2).x;
+                break;
+            }
+
+            if (interpolation.get(2).derivValue * interpolation.get(0).derivValue < 0) {
+                interpolation.set(1, interpolation.get(0));
+                interpolation.set(0, interpolation.get(2));
+            } else if (interpolation.get(2).derivValue * interpolation.get(1).derivValue < 0) {
+                interpolation.set(0, interpolation.get(2));
+            }
+        }
+
+        return coordinate(res);
+    }
+
+    private static class Coordinate implements Comparable<Coordinate> {
+        double x;
+        double y;
+        double derivValue;
+
+        public Coordinate(double x, double y, double derivValue) {
+            this.x = x;
+            this.y = y;
+            this.derivValue = derivValue;
+        }
+
+        @Override
+        public int compareTo(Coordinate o) {
+            if (this.x != o.x) {
+                return Double.compare(x, o.x);
+            } else if (this.y != o.y) {
+                return Double.compare(this.y, o.y);
+            } else {
+                return Double.compare(this.derivValue, o.derivValue);
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj == null || this.getClass() != obj.getClass()) {
+                return false;
+            }
+
+            Coordinate c = (Coordinate) obj;
+
+            return this.x == c.x && this.y == c.y && this.derivValue == c.derivValue;
+        }
+
+        @Override
+        public String toString() {
+            return "Coordinate{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    ", derivValue=" + derivValue +
+                    '}';
+        }
     }
 }
