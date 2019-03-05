@@ -1,8 +1,6 @@
 package ru.bmstu.nummethodslabs.simplex;
 
-import java.io.*;
-
-public class Objfunc implements Objfun
+public class Objfunc
 {
 	public double evalObjfun(double[] x){
 		double sum = 80;
