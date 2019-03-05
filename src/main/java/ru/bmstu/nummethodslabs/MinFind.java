@@ -1,6 +1,7 @@
 package ru.bmstu.nummethodslabs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -20,22 +21,22 @@ public class MinFind {
     }
 
     public static void main(String[] args) {
-//        double[] segment = svenn(X_0, DELTA);
-//        System.out.println("SVENN: " + Arrays.toString(segment));
-//        double b = bisection(segment[0], segment[1], 0);
-//        System.out.println("BISECTION: " + b + " error: " + Math.abs(b -
-//                7.56001) + " min: " + f(b));
-//        double g = golden(segment[0], segment[1], 0);
-//        System.out.println("GOLDEN: " + g + " error: " + Math.abs(g -
-//                7.56001) + " min: " + f(g));
-//        double f = fibonacci(segment[0], segment[1]);
-//        System.out.println("FIBONACCI: " + f + " error: " + Math.abs(f -
-//                7.56001) + " min: " + f(f));
+        double[] segment = svenn(X_0, DELTA);
+        System.out.println("SVENN: " + Arrays.toString(segment));
+        double b = bisection(segment[0], segment[1], 0);
+        System.out.println("BISECTION: " + b + " error: " + Math.abs(b -
+                7.56001) + " min: " + f(b));
+        double g = golden(segment[0], segment[1], 0);
+        System.out.println("GOLDEN: " + g + " error: " + Math.abs(g -
+                7.56001) + " min: " + f(g));
+        double f = fibonacci(segment[0], segment[1]);
+        System.out.println("FIBONACCI: " + f + " error: " + Math.abs(f -
+                7.56001) + " min: " + f(f));
 
         Coordinate coordinate = quadraticInterpolation();
-        System.out.println(coordinate);
+        System.out.println(coordinate + " " + Math.abs(coordinate.x - 7.56001));
         Coordinate coordinate1 = cubicInterpolation();
-        System.out.println(coordinate1);
+        System.out.println(coordinate1 + " " + Math.abs(coordinate1.x - 7.56001));
     }
 
     private static double[] svenn(double xPrev, double delta) {
@@ -219,6 +220,7 @@ public class MinFind {
             }
         }
 
+        System.out.println(k);
         return coordinate(res);
     }
 
@@ -293,6 +295,7 @@ public class MinFind {
             }
         }
 
+        System.out.println(k);
         return coordinate(res);
     }
 
