@@ -1,11 +1,17 @@
 package ru.bmstu.mathmodeling.lab2;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.ImmutableSet;
 
 public class Triangle {
     private static final int SIZE = 3;
     private Point[] points;
+    private Edge[] edges;
     private Circle circumCircle;
 
     public Triangle(Point a, Point b, Point c) {
@@ -14,6 +20,21 @@ public class Triangle {
         points[0] = a;
         points[1] = b;
         points[2] = c;
+
+        Edge ab = new Edge(a, b);
+        ab.addTriangle(this);
+
+        Edge bc = new Edge(b, c);
+        bc.addTriangle(this);
+
+        Edge ac = new Edge(a, c);
+        ac.addTriangle(this);
+
+        edges = new Edge[]{ab, bc, ac};
+
+        a.addTriangle(this);
+        b.addTriangle(this);
+        c.addTriangle(this);
     }
 
     public Point getFirst() {
@@ -30,6 +51,17 @@ public class Triangle {
 
     public Point[] getPoints() {
         return points;
+    }
+
+    public Set<Triangle> getNeighbours() {
+        return Arrays.stream(edges)
+                .flatMap(edge -> edge.getTriangles().stream())
+                .filter(triangle -> !triangle.equals(this))
+                .collect(Collectors.toSet());
+    }
+
+    public Edge[] getEdges() {
+        return edges;
     }
 
     //TODO можно добавить еще случай "на стороне треугольника" (одно из чисел будет 0)
@@ -73,22 +105,32 @@ public class Triangle {
         return Arrays.hashCode(points);
     }
 
-    public List<Point> getClosestEdge(Point point) {
-        List<Point> closest = Arrays.asList(points[0], points[1]);
+    public Set<Point> getClosestEdge(Point point) {
+        Set<Point> closest = ImmutableSet.of(points[0], points[1]);
         double min = Utils.getDistanceToSegment(point, points[0], points[1]);
 
         double current = Utils.getDistanceToSegment(point, points[0], points[2]);
         if (current < min) {
             min = current;
-            closest = Arrays.asList(points[0], points[2]);
+            closest = ImmutableSet.of(points[0], points[2]);
         }
 
         current = Utils.getDistanceToSegment(point, points[1], points[2]);
         if (current < min) {
-            closest = Arrays.asList(points[1], points[2]);
+            closest = ImmutableSet.of(points[1], points[2]);
         }
 
         return closest;
+    }
+
+    public Point getLastPoint(Edge edge) {
+        if (!edge.contains(points[0])) {
+            return points[0];
+        } else if (!edge.contains(points[1])) {
+            return points[1];
+        } else {
+            return points[2];
+        }
     }
 
     public void setCircumCircle(Circle circumCircle) {

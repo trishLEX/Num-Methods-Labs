@@ -4,6 +4,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+
 @ParametersAreNonnullByDefault
 public class Utils {
     private Utils() {
@@ -21,6 +24,15 @@ public class Utils {
                 if (distance < min) {
                     min = distance;
                     closest = triangle;
+                } else if (Double.compare(distance, min) == 0) {
+                    if (closest.isPointInside(point)) {
+                        return closest;
+                    } else if (triangle.isPointInside(point)) {
+                        return triangle;
+                    } else {
+                        min = distance;
+                        closest = triangle;
+                    }
                 }
             }
         }
@@ -74,5 +86,18 @@ public class Utils {
 
     public static double[] getCircumcenter(Triangle triangle) {
         return getCircumcenter(triangle.getFirst(), triangle.getSecond(), triangle.getThird());
+    }
+
+    public static Edge getCommonEdge(Triangle triangle1, Triangle triangle2) {
+        Sets.SetView<Edge> commonEdge = Sets.intersection(
+                Sets.newHashSet(triangle1.getEdges()),
+                Sets.newHashSet(triangle2.getEdges())
+        );
+
+        if (commonEdge.size() != 1) {
+            throw new IllegalStateException("Common edge is only one");
+        }
+
+        return Iterables.getOnlyElement(commonEdge);
     }
 }

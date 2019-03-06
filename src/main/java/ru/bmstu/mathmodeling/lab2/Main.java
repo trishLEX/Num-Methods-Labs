@@ -51,8 +51,8 @@ public class Main {
     }
 
     public static void showTriangulation(List<Point> points) {
-        Triangulation triangulation = new Triangulation();
-        triangulation.triangulate(points);
+        Triangulation triangulation = new Triangulation(points);
+        triangulation.triangulate();
 
         System.out.println(triangulation.getCircles());
 

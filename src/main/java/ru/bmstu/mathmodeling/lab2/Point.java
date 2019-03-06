@@ -1,6 +1,10 @@
 package ru.bmstu.mathmodeling.lab2;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static ru.bmstu.mathmodeling.lab2.Main.ENVIRONMENT;
 
@@ -8,6 +12,7 @@ public class Point {
     private double x;
     private double y;
     private long zCode;
+    private Set<Triangle> triangles;
 
     public Point(int x, int y) {
         this.x = x;
@@ -23,6 +28,8 @@ public class Point {
         for (int i = 0; i < bytes.length; i++) {
             zCode += (1 << i) * (bytes[i] * 0xff);
         }
+
+        triangles = new HashSet<>();
     }
 
     public Point(double[] point) {
@@ -52,6 +59,18 @@ public class Point {
 
     public double getDistance(Point other) {
         return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
+    public void addTriangle(Triangle triangle) {
+        triangles.add(triangle);
+    }
+
+    public Set<Triangle> getTriangles() {
+        return triangles;
+    }
+
+    public void removeTriangle(Triangle triangle) {
+        triangles.remove(triangle);
     }
 
     @Override
