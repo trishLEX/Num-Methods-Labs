@@ -1,6 +1,7 @@
 package ru.bmstu.mathmodeling.lab2;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -39,6 +40,24 @@ public class Circle {
 
     public double[] getColor() {
         return color;
+    }
+
+    public boolean doNotContainPoints(List<Triangle> triangles) {
+        List<Point> points = triangles.stream()
+                .map(tr -> Arrays.asList(tr.getPoints()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        for (Point p : points) {
+            if (triangle.contains(p)) {
+                continue;
+            }
+            if (Utils.getDistance(p.getX(), p.getY(), center[0], center[1]) < radius) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public boolean containsSomePointOfTriangle(Triangle triangle) {

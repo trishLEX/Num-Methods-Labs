@@ -1,9 +1,12 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.*;
 
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static ru.bmstu.common.Drawer.GRAY;
@@ -15,16 +18,13 @@ public class Triangulation {
     private List<Triangle> triangles;
     private List<Point> points;
 
-    private static final int OPTION = 1;
-
     public Triangulation(List<Point> points) {
         this.points = points;
-
-        this.circles = new ArrayList<>();
-        this.triangles = new ArrayList<>();
+        this.circles = new CopyOnWriteArrayList<>();
+        this.triangles = new CopyOnWriteArrayList<>();
     }
 
-    public void triangulate() {
+    public synchronized void triangulate() {
         points.sort(Comparator.comparingLong(Point::getZCode));
         System.out.println(points);
 
@@ -33,76 +33,125 @@ public class Triangulation {
         if (points.size() > 3) {
             for (int i = 3; i < points.size(); i++) {
                 Point point = points.get(i);
-                boolean wasTriangulation = false;
                 //for (Triangle triangle : Lists.newArrayList(triangles)) {
                 Triangle triangle = Utils.getClosestTriangle(point, triangles);
                     if (triangle.isPointInside(point)) {
-                        //TODO delete old one
-//
-//                        Triangle newTriangle1 = new Triangle(point, triangle.getFirst(), triangle.getSecond());
-//                        Triangle newTriangle2 = new Triangle(point, triangle.getFirst(), triangle.getThird());
-//                        Triangle newTriangle3 = new Triangle(point, triangle.getSecond(), triangle.getThird());
-//
-//                        triangles.add(newTriangle1);
-//                        triangles.add(newTriangle2);
-//                        triangles.add(newTriangle3);
-//
-//                        Circle circle1 = Circle.getCircumcircle(newTriangle1).withColor(GRAY);
-//                        newTriangle1.setCircumCircle(circle1);
-//
-//                        Circle circle2 = Circle.getCircumcircle(newTriangle2).withColor(GRAY);
-//                        newTriangle2.setCircumCircle(circle2);
-//
-//                        Circle circle3 = Circle.getCircumcircle(newTriangle3).withColor(GRAY);
-//                        newTriangle3.setCircumCircle(circle3);
-//
-//                        circles.addAll(Arrays.asList(
-//                                circle1,
-//                                circle2,
-//                                circle3
-//                        ));
+                        removeTriangle(triangle);
 
-                        wasTriangulation = true;
+                        addTriangle(point, triangle.getFirst(), triangle.getSecond());
+                        addTriangle(point, triangle.getFirst(), triangle.getThird());
+                        addTriangle(point, triangle.getSecond(), triangle.getThird());
                     } else {
                         Set<Point> closestEdge = triangle.getClosestEdge(point);
 
                         Point edgePoint1 = Iterables.get(closestEdge, 0);
                         Point edgePoint2 = Iterables.get(closestEdge, 1);
 
-                        boolean canTriangulate = tryTriangulate(point, edgePoint1, edgePoint2);
+                        Triangle newTriangle = tryTriangulate(point, edgePoint1, edgePoint2);
 
-                        if (!canTriangulate) {
-                            triangles.remove(triangle);
-                            circles.remove(triangle.getCircumCircle());
-
-                            Sets.SetView<Point> dif =
-                                    Sets.difference(Sets.newHashSet(triangle.getPoints()), closestEdge);
-                            if (dif.size() != 1) {
-                                throw new IllegalStateException("One element expected");
+                        if (newTriangle == null) {
+                            try {
+                                wait();
+                            } catch (InterruptedException e) {
+                                throw new IllegalStateException(e);
                             }
 
-                            Point mid = Iterables.getOnlyElement(dif);
+                            removeTriangle(triangle);
 
-                            Triangle triangle1 = new Triangle(point, mid, edgePoint1);
-                            Circle circle1 = Circle.getCircumcircle(triangle1).withColor(GRAY);
-                            triangle1.setCircumCircle(circle1);
+                            Point mid = triangle.getLastPoint(closestEdge);
 
-                            Triangle triangle2 = new Triangle(point, mid, edgePoint2);
-                            Circle circle2 = Circle.getCircumcircle(triangle2).withColor(GRAY);
-                            triangle2.setCircumCircle(circle2);
-
-                            triangles.add(triangle1);
-                            triangles.add(triangle2);
-
-                            circles.add(circle1);
-                            circles.add(circle2);
+                            Triangle triangle1 = addTriangle(point, mid, edgePoint1);
+                            Triangle triangle2 = addTriangle(point, mid, edgePoint2);
 
                             flip(triangle1, triangle2);
+
+                            triangle = triangle1;
+                            newTriangle = triangle2;
                         }
+
+                        makeConvex(point, triangle, newTriangle);
                     }
                 //}
             }
         }
+    }
+
+    private void makeConvex(Point point, Triangle triangle, Triangle newTriangle) {
+        Set<Point> outsidePoints = new HashSet<>();
+        Set<Point> commonEdge = getCommonEdge(triangle, newTriangle);
+        Set<Point> quadrilateral = new HashSet<>(commonEdge);
+        quadrilateral.add(point);
+
+        for (Point supportPoint : commonEdge) {
+            for (Triangle adjacentTr : Sets.newHashSet(supportPoint.getTriangles())) {
+                for (Point potential : adjacentTr.getPoints()) {
+                    if (!quadrilateral.contains(potential)) {
+                        Set<Triangle> intersection = Sets.intersection(supportPoint.getTriangles(), potential.getTriangles());
+                        if (intersection.size() == 1) {
+                            Point p = point;
+                            Point q = potential;
+
+                            Point a = Iterables.get(commonEdge, 0);
+                            Point b = Iterables.get(commonEdge, 1);
+
+                            Point r;
+
+                            if (p.equals(q) || p.equals(a) || q.equals(a) || p.equals(b) || q.equals(b)) {
+                                continue;
+                            }
+
+                            Triangle pqa = new Triangle(p, q, a);
+                            Triangle pqb = new Triangle(p, q, b);
+//                                            if (isCircleNotContainsPoints(Circle.getCircumcircle(pqa), pqa)) {
+//                                                r = a;
+//                                            } else if (isCircleNotContainsPoints(Circle.getCircumcircle(pqb), pqb)) {
+//                                                r = b;
+//                                            } else {
+//                                                continue;
+//                                            }
+                            if (Circle.getCircumcircle(pqa).doNotContainPoints(triangles)) {
+                                r = a;
+                            } else if (Circle.getCircumcircle(pqb).doNotContainPoints(triangles)) {
+                                r = b;
+                            } else {
+                                continue;
+                            }
+
+                            if (!doIntersect(p, q, a, b) && (!outsidePoints.contains(p) || !outsidePoints.contains(q))) {
+                                outsidePoints.add(p);
+                                outsidePoints.add(q);
+
+                                addTriangle(p, q, r);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void removeTriangle(Triangle triangle) {
+        for (Point p : triangle.getPoints()) {
+            p.removeTriangle(triangle);
+        }
+
+        triangles.remove(triangle);
+        circles.removeIf(circle -> Arrays.equals(circle.getCenter(), triangle.getCircumCircle().getCenter()));
+    }
+
+    private Triangle addTriangle(Point a, Point b, Point c) {
+        Triangle triangle = new Triangle(a, b, c);
+        a.addTriangle(triangle);
+        b.addTriangle(triangle);
+        c.addTriangle(triangle);
+
+        Circle circle = Circle.getCircumcircle(triangle).withColor(GRAY);
+        triangle.setCircumCircle(circle);
+
+        triangles.add(triangle);
+        circles.add(circle);
+
+        return triangle;
     }
 
     private void flip(Triangle triangle1, Triangle triangle2) {
@@ -110,94 +159,41 @@ public class Triangulation {
         neighbours1.remove(triangle2);
 
         for (Triangle neighbour : neighbours1) {
-            if (!neighbour.equals(triangle2)) {
-                rebuildTriangles(triangle1, neighbour);
-            }
+            rebuildTriangles(triangle1, neighbour);
         }
 
         Set<Triangle> neighbours2 = triangle2.getNeighbours();
         neighbours2.remove(triangle1);
 
         for (Triangle neighbour : neighbours2) {
-            if (!neighbour.equals(triangle1)) {
-                rebuildTriangles(triangle2, neighbour);
-            }
+            rebuildTriangles(triangle2, neighbour);
         }
     }
 
-    private void rebuildTriangles(Triangle triangle1, Triangle triangle2) {
-        if (!isCircleNotContainsPoints(triangle1.getCircumCircle(), triangle1) || !isCircleNotContainsPoints(triangle2.getCircumCircle(), triangle2)) {
-            triangles.remove(triangle1);
-            circles.remove(triangle1.getCircumCircle());
+    private synchronized void rebuildTriangles(Triangle triangle1, Triangle triangle2) {
+        //if (!isCircleNotContainsPoints(triangle1.getCircumCircle(), triangle1) || !isCircleNotContainsPoints(triangle2.getCircumCircle(), triangle2)) {
+        if (!triangle1.getCircumCircle().doNotContainPoints(triangles) || !triangle2.getCircumCircle().doNotContainPoints(triangles)) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
 
-            triangles.remove(triangle2);
-            circles.remove(triangle2.getCircumCircle());
+            removeTriangle(triangle1);
+            removeTriangle(triangle2);
 
-            Edge commonEdge = Utils.getCommonEdge(triangle1, triangle2);
+            Set<Point> commonEdge = Utils.getCommonEdge(triangle1, triangle2);
 
             Point p1 = triangle1.getLastPoint(commonEdge);
             Point p2 = triangle2.getLastPoint(commonEdge);
 
-            Triangle newTriangle1 = new Triangle(p1, p2, commonEdge.getFirst());
-            Circle circle1 = Circle.getCircumcircle(newTriangle1).withColor(GRAY);
-            newTriangle1.setCircumCircle(circle1);
+            Triangle newTriangle1 = addTriangle(p1, p2, Iterables.get(commonEdge, 0));
+            Triangle newTriangle2 = addTriangle(p1, p2, Iterables.get(commonEdge, 1));
 
-            Triangle newTriangle2 = new Triangle(p1, p2, commonEdge.getSecond());
-            Circle circle2 = Circle.getCircumcircle(newTriangle2).withColor(GRAY);
-            newTriangle2.setCircumCircle(circle2);
-
-            triangles.add(newTriangle1);
-            triangles.add(newTriangle2);
-
-            circles.add(circle1);
-            circles.add(circle2);
+            //setWait(true);
 
             flip(newTriangle1, newTriangle2);
         }
-    }
-
-    private void createNewPointAndTriangulate(List<Point> points, int i, Point point, Triangle triangle, Point circumCenter) {
-        Set<Point> closestEdge = triangle.getClosestEdge(point);
-        Sets.SetView<Point> dif = Sets.difference(Sets.newHashSet(triangle.getPoints()), Sets.newHashSet(closestEdge));
-        if (dif.size() != 1) {
-            throw new IllegalStateException("One element expected");
-        }
-        Point mid = dif.iterator().next();
-
-        Triangle newTriangle1 = new Triangle(circumCenter, mid, Iterables.get(closestEdge, 0));
-        Circle circle1 = Circle.getCircumcircle(newTriangle1).withColor(GRAY);
-        newTriangle1.setCircumCircle(circle1);
-
-        Triangle newTriangle2 = new Triangle(circumCenter, mid, Iterables.get(closestEdge, 1));
-        Circle circle2 = Circle.getCircumcircle(newTriangle2).withColor(GRAY);
-        newTriangle2.setCircumCircle(circle2);
-
-        triangles.add(newTriangle1);
-        triangles.add(newTriangle2);
-
-        circles.add(circle1);
-        circles.add(circle2);
-
-        points.add(i, circumCenter);
-    }
-
-    private boolean canDeleteTriangle(Triangle triangle) {
-        boolean canRemoveFirst = false;
-        boolean canRemoveSecond = false;
-        boolean canRemoveThird = false;
-        for (Triangle tr : triangles) {
-            if (!tr.equals(triangle)) {
-                canRemoveFirst = canRemoveFirst || tr.contains(triangle.getFirst());
-                canRemoveSecond = canRemoveSecond || tr.contains(triangle.getSecond());
-                canRemoveThird = canRemoveThird || tr.contains(triangle.getThird());
-            }
-
-            if (canRemoveFirst && canRemoveSecond && canRemoveThird) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void addTriangleWithCircle(List<Point> points) {
@@ -205,40 +201,30 @@ public class Triangulation {
             throw new IllegalArgumentException("Wrong size of points");
         }
 
-        Triangle triangle = new Triangle(points.get(0), points.get(1), points.get(2));
-        triangles.add(triangle);
-        Circle circle = Circle.getCircumcircle(triangle).withColor(GRAY);
-        triangle.setCircumCircle(circle);
-        circles.add(circle);
+        addTriangle(points.get(0), points.get(1), points.get(2));
     }
 
-    private boolean tryTriangulate(Point point, Triangle triangle) {
-        Point a = triangle.getFirst();
-        Point b = triangle.getSecond();
-        Point c = triangle.getThird();
-
-        boolean wasTriangulation = tryTriangulate(point, a, b);
-
-        wasTriangulation = tryTriangulate(point, a, c) || wasTriangulation;
-
-        wasTriangulation = tryTriangulate(point, b, c) || wasTriangulation;
-
-        return wasTriangulation;
-    }
-
-    private boolean tryTriangulate(Point point, Point a, Point b) {
-        boolean wasTriangulation = false;
+    @Nullable
+    private synchronized Triangle tryTriangulate(Point point, Point a, Point b) {
         Triangle pab = new Triangle(point, a, b);
         Circle pabCircle = Circle.getCircumcircle(pab);
         circles.add(pabCircle);
-        if (isCircleNotContainsPoints(pabCircle, pab)) {
+        if (pabCircle.doNotContainPoints(triangles)) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
             triangles.add(pab);
             pabCircle.setColor(GRAY);
             pab.setCircumCircle(pabCircle);
-            wasTriangulation = true;
+            point.addTriangle(pab);
+            a.addTriangle(pab);
+            b.addTriangle(pab);
+            return pab;
         }
 
-        return wasTriangulation;
+        return null;
     }
 
     private boolean isCircleNotContainsPoints(Circle circle, Triangle triangle) {

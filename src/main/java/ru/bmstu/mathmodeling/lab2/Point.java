@@ -1,16 +1,12 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static ru.bmstu.mathmodeling.lab2.Main.ENVIRONMENT;
 
 public class Point {
-    private double x;
-    private double y;
+    private int x;
+    private int y;
     private long zCode;
     private Set<Triangle> triangles;
 
@@ -30,15 +26,6 @@ public class Point {
         }
 
         triangles = new HashSet<>();
-    }
-
-    public Point(double[] point) {
-        if (point.length != 2) {
-            throw new IllegalArgumentException("Wrong length of array");
-        }
-
-        this.x = point[0];
-        this.y = point[1];
     }
 
     public double getX() {
@@ -76,13 +63,14 @@ public class Point {
     @Override
     public String toString() {
         if (ENVIRONMENT == Environment.DEVELOPMENT) {
-            return String.format("points.add(new Point(%.2f, %.2f));\n", x, y);
+            return String.format("(%d; %d)\n", x, y);
         } else {
-            return "Point{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    ", zCode=" + zCode +
-                    '}';
+            return String.format("points.add(new Point(%d, %d));\n", x, y);
+//            return "Point{" +
+//                    "x=" + x +
+//                    ", y=" + y +
+//                    ", zCode=" + zCode +
+//                    '}';
         }
     }
 

@@ -1,40 +1,28 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 public class Triangle {
-    private static final int SIZE = 3;
     private Point[] points;
-    private Edge[] edges;
     private Circle circumCircle;
 
     public Triangle(Point a, Point b, Point c) {
-        points = new Point[SIZE];
+        points = new Point[]{a, b, c};
 
-        points[0] = a;
-        points[1] = b;
-        points[2] = c;
+        if (a.equals(b) || a.equals(c) || b.equals(c)) {
+            throw new IllegalArgumentException("Wrong points");
+        }
 
-        Edge ab = new Edge(a, b);
-        ab.addTriangle(this);
-
-        Edge bc = new Edge(b, c);
-        bc.addTriangle(this);
-
-        Edge ac = new Edge(a, c);
-        ac.addTriangle(this);
-
-        edges = new Edge[]{ab, bc, ac};
-
-        a.addTriangle(this);
-        b.addTriangle(this);
-        c.addTriangle(this);
+//        a.addTriangle(this);
+//        b.addTriangle(this);
+//        c.addTriangle(this);
     }
 
     public Point getFirst() {
@@ -54,14 +42,20 @@ public class Triangle {
     }
 
     public Set<Triangle> getNeighbours() {
-        return Arrays.stream(edges)
-                .flatMap(edge -> edge.getTriangles().stream())
-                .filter(triangle -> !triangle.equals(this))
-                .collect(Collectors.toSet());
-    }
+        Set<Triangle> adjacentTrs1 = points[0].getTriangles();
+        Set<Triangle> adjacentTrs2 = points[1].getTriangles();
+        Set<Triangle> adjacentTrs3 = points[2].getTriangles();
 
-    public Edge[] getEdges() {
-        return edges;
+        Sets.SetView<Triangle> neighbours1 = Sets.intersection(adjacentTrs1, adjacentTrs2);
+        Sets.SetView<Triangle> neighbours2 = Sets.intersection(adjacentTrs1, adjacentTrs3);
+        Sets.SetView<Triangle> neighbours3 = Sets.intersection(adjacentTrs2, adjacentTrs3);
+
+        Sets.SetView<Triangle> union = Sets.union(neighbours1, neighbours2);
+
+        Set<Triangle> result = Sets.newHashSet(Sets.union(union, neighbours3));
+        result.remove(this);
+
+        return result;
     }
 
     //TODO можно добавить еще случай "на стороне треугольника" (одно из чисел будет 0)
@@ -102,7 +96,7 @@ public class Triangle {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(points);
+        return points[0].hashCode() + points[1].hashCode() + points[2].hashCode();
     }
 
     public Set<Point> getClosestEdge(Point point) {
@@ -123,7 +117,11 @@ public class Triangle {
         return closest;
     }
 
-    public Point getLastPoint(Edge edge) {
+    public Point getLastPoint(Collection<Point> edge) {
+        if (edge.size() != 2) {
+            throw new IllegalArgumentException("Edge must contain 2 points");
+        }
+
         if (!edge.contains(points[0])) {
             return points[0];
         } else if (!edge.contains(points[1])) {

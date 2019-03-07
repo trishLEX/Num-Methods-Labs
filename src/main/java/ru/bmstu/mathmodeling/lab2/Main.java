@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Main {
-    private static final int K = 9;
-    private static final int N = 7;
+    private static final int N = 15;
 
     public static final int WINDOW_SIZE = 720;
     public static final Environment ENVIRONMENT = Environment.DEVELOPMENT;
@@ -52,11 +51,12 @@ public class Main {
 
     public static void showTriangulation(List<Point> points) {
         Triangulation triangulation = new Triangulation(points);
-        triangulation.triangulate();
+
+        TriangleDrawer drawer = new TriangleDrawer(WINDOW_SIZE, WINDOW_SIZE, triangulation, points);
+        drawer.draw();
+
+        //triangulation.triangulate();
 
         System.out.println(triangulation.getCircles());
-
-        TriangleDrawer drawer = new TriangleDrawer(WINDOW_SIZE, WINDOW_SIZE, triangulation.getTriangles(), triangulation.getCircles(), points);
-        drawer.draw();
     }
 }
