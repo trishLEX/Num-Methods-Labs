@@ -21,7 +21,6 @@ public class TriangleDrawer extends Drawer {
 
     private List<Point> points;
     private Triangulation triangulation;
-    private Thread triangulationThread;
 
     private boolean toDrawCircles;
     private boolean toDrawRedCircles;
@@ -54,7 +53,7 @@ public class TriangleDrawer extends Drawer {
 
     @Override
     public void draw() {
-        triangulationThread = new Thread(() -> triangulation.triangulate());
+        Thread triangulationThread = new Thread(() -> triangulation.triangulate());
         triangulationThread.start();
 
         while (!GLFW.glfwWindowShouldClose(this.window)) {
@@ -78,10 +77,11 @@ public class TriangleDrawer extends Drawer {
     }
 
     private void drawTriangles() {
-        glColor3dv(BLACK);
+        //glColor3dv(BLACK);
         glLineWidth(2);
         for (Triangle triangle : triangulation.getTriangles()) {
             glBegin(GL_LINE_LOOP);
+            glColor3dv(triangle.getColor());
             glVertex2d((triangle.getFirst().getX() - SIZE) / SIZE, (triangle.getFirst().getY() - SIZE) / SIZE);
             glVertex2d((triangle.getSecond().getX() - SIZE) / SIZE, (triangle.getSecond().getY() - SIZE) / SIZE);
             glVertex2d((triangle.getThird().getX() - SIZE) / SIZE, (triangle.getThird().getY() - SIZE) / SIZE);

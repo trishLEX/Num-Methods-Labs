@@ -1,7 +1,6 @@
 package ru.bmstu.mathmodeling.lab2;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -9,14 +8,17 @@ import com.google.common.collect.Sets;
 
 import javax.annotation.Nullable;
 
+import static ru.bmstu.common.Drawer.BLACK;
 import static ru.bmstu.mathmodeling.lab2.Utils.*;
 
 public class Triangle {
     private Point[] points;
+    private double[] color;
     private Circle circumCircle;
 
     public Triangle(Point a, Point b, Point c) {
         points = new Point[]{a, b, c};
+        color = BLACK;
 
         if (a.equals(b) || a.equals(c) || b.equals(c)) {
             throw new IllegalArgumentException("Wrong points");
@@ -218,6 +220,14 @@ public class Triangle {
 
     public Circle getCircumCircle() {
         return circumCircle;
+    }
+
+    public void setColor(double[] color) {
+        this.color = color;
+    }
+
+    public double[] getColor() {
+        return color;
     }
 
     @Override

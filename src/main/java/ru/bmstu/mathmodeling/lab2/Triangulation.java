@@ -7,7 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static ru.bmstu.common.Drawer.GRAY;
+import static ru.bmstu.common.Drawer.*;
 import static ru.bmstu.mathmodeling.lab2.Main.MAKE_STEPS;
 import static ru.bmstu.mathmodeling.lab2.Utils.*;
 
@@ -64,20 +64,35 @@ public class Triangulation {
 
                             Point mid = triangle.getLastPoint(closestEdge);
 
+                            if (point.getX() == 599) {
+                                System.out.println();
+                            }
+
                             Triangle triangle1 = addTriangle(point, mid, edgePoint1);
                             Triangle triangle2 = addTriangle(point, mid, edgePoint2);
 
+                            if (point.getX() == 599) {
+                                System.out.println();
+                            }
+
                             flip(triangle1, triangle2);
 
-                            Triangle neighbour1 = triangle1.getNeighbour(triangle1.getOppositeEdge(point));
-                            if (neighbour1 != null) {
-                                makeConvex(point, neighbour1, triangle1);
+                            for (Triangle newTr : Sets.newHashSet(point.getTriangles())) {
+                                Triangle neighbour = newTr.getNeighbour(newTr.getOppositeEdge(point));
+                                if (neighbour != null) {
+                                    makeConvex(point, neighbour, newTr);
+                                }
                             }
 
-                            Triangle neighbour2 = triangle2.getNeighbour(triangle2.getOppositeEdge(point));
-                            if (neighbour2 != null) {
-                                makeConvex(point, neighbour2, triangle2);
-                            }
+//                            Triangle neighbour1 = triangle1.getNeighbour(triangle1.getOppositeEdge(point));
+//                            if (neighbour1 != null) {
+//                                makeConvex(point, neighbour1, triangle1);
+//                            }
+//
+//                            Triangle neighbour2 = triangle2.getNeighbour(triangle2.getOppositeEdge(point));
+//                            if (neighbour2 != null) {
+//                                makeConvex(point, neighbour2, triangle2);
+//                            }
                         } else {
                             makeConvex(point, triangle, newTriangle);
                         }
@@ -95,6 +110,10 @@ public class Triangulation {
         for (Point supportPoint : commonEdge) {
             for (Triangle adjacentTr : Sets.newHashSet(supportPoint.getTriangles())) {
                 for (Point potential : adjacentTr.getPoints()) {
+                    if (potential.getX() == 286) {
+                        System.out.println();
+                    }
+
                     if (!quadrilateral.contains(potential)) {
                         Set<Triangle> intersection = Sets.intersection(supportPoint.getTriangles(), potential.getTriangles());
                         if (intersection.size() == 1) {
@@ -185,22 +204,36 @@ public class Triangulation {
         }
     }
 
-    private synchronized void rebuildTriangles(Triangle triangle1, Triangle triangle2) {
+    private void rebuildTriangles(Triangle triangle1, Triangle triangle2) {
         if (!triangle1.getCircumCircle().doNotContainPoints(triangles) || !triangle2.getCircumCircle().doNotContainPoints(triangles)) {
+            triangle1.setColor(RED);
+            triangle2.setColor(RED);
             toWait();
-
-            removeTriangle(triangle1);
-            removeTriangle(triangle2);
 
             Set<Point> commonEdge = Utils.getCommonEdge(triangle1, triangle2);
 
             Point p1 = triangle1.getLastPoint(commonEdge);
             Point p2 = triangle2.getLastPoint(commonEdge);
+            Point commonPoint1 = Iterables.get(commonEdge, 0);
+            Point commonPoint2 = Iterables.get(commonEdge, 1);
+            if (doIntersect(p1, p2, commonPoint1, commonPoint2)) {
+                removeTriangle(triangle1);
+                removeTriangle(triangle2);
 
-            Triangle newTriangle1 = addTriangle(p1, p2, Iterables.get(commonEdge, 0));
-            Triangle newTriangle2 = addTriangle(p1, p2, Iterables.get(commonEdge, 1));
+                Triangle newTriangle1 = addTriangle(p1, p2, commonPoint1);
+                Triangle newTriangle2 = addTriangle(p1, p2, commonPoint2);
 
-            flip(newTriangle1, newTriangle2);
+                newTriangle1.setColor(RED);
+                newTriangle2.setColor(RED);
+
+                flip(newTriangle1, newTriangle2);
+
+                newTriangle1.setColor(BLACK);
+                newTriangle2.setColor(BLACK);
+            }
+
+            triangle1.setColor(BLACK);
+            triangle2.setColor(BLACK);
         }
     }
 
