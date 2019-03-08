@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Random;
 
 public class Main {
-    private static final int N = 15;
+    private static final int N = 20;
 
     public static final int WINDOW_SIZE = 720;
     public static final Environment ENVIRONMENT = Environment.DEVELOPMENT;
+    public static final boolean MAKE_STEPS = false;
 
     public static void main(String[] args) {
         int fieldsCount = 1;

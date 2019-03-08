@@ -3,16 +3,15 @@ package ru.bmstu.mathmodeling.lab2;
 import com.google.common.collect.*;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import static ru.bmstu.common.Drawer.GRAY;
-import static ru.bmstu.common.Drawer.RED;
+import static ru.bmstu.mathmodeling.lab2.Main.MAKE_STEPS;
 import static ru.bmstu.mathmodeling.lab2.Utils.*;
 
+@ParametersAreNonnullByDefault
 public class Triangulation {
     private List<Circle> circles;
     private List<Triangle> triangles;
@@ -24,7 +23,17 @@ public class Triangulation {
         this.triangles = new CopyOnWriteArrayList<>();
     }
 
-    public synchronized void triangulate() {
+    private synchronized void toWait() {
+        if (MAKE_STEPS) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
+    public void triangulate() {
         points.sort(Comparator.comparingLong(Point::getZCode));
         System.out.println(points);
 
@@ -33,7 +42,6 @@ public class Triangulation {
         if (points.size() > 3) {
             for (int i = 3; i < points.size(); i++) {
                 Point point = points.get(i);
-                //for (Triangle triangle : Lists.newArrayList(triangles)) {
                 Triangle triangle = Utils.getClosestTriangle(point, triangles);
                     if (triangle.isPointInside(point)) {
                         removeTriangle(triangle);
@@ -42,7 +50,7 @@ public class Triangulation {
                         addTriangle(point, triangle.getFirst(), triangle.getThird());
                         addTriangle(point, triangle.getSecond(), triangle.getThird());
                     } else {
-                        Set<Point> closestEdge = triangle.getClosestEdge(point);
+                        Set<Point> closestEdge = triangle.getClosestEdge(point, triangles);
 
                         Point edgePoint1 = Iterables.get(closestEdge, 0);
                         Point edgePoint2 = Iterables.get(closestEdge, 1);
@@ -50,11 +58,7 @@ public class Triangulation {
                         Triangle newTriangle = tryTriangulate(point, edgePoint1, edgePoint2);
 
                         if (newTriangle == null) {
-                            try {
-                                wait();
-                            } catch (InterruptedException e) {
-                                throw new IllegalStateException(e);
-                            }
+                            toWait();
 
                             removeTriangle(triangle);
 
@@ -65,13 +69,19 @@ public class Triangulation {
 
                             flip(triangle1, triangle2);
 
-                            triangle = triangle1;
-                            newTriangle = triangle2;
-                        }
+                            Triangle neighbour1 = triangle1.getNeighbour(triangle1.getOppositeEdge(point));
+                            if (neighbour1 != null) {
+                                makeConvex(point, neighbour1, triangle1);
+                            }
 
-                        makeConvex(point, triangle, newTriangle);
+                            Triangle neighbour2 = triangle2.getNeighbour(triangle2.getOppositeEdge(point));
+                            if (neighbour2 != null) {
+                                makeConvex(point, neighbour2, triangle2);
+                            }
+                        } else {
+                            makeConvex(point, triangle, newTriangle);
+                        }
                     }
-                //}
             }
         }
     }
@@ -90,6 +100,9 @@ public class Triangulation {
                         if (intersection.size() == 1) {
                             Point p = point;
                             Point q = potential;
+                            if (!Sets.intersection(p.getTriangles(), q.getTriangles()).isEmpty()) {
+                                continue;
+                            }
 
                             Point a = Iterables.get(commonEdge, 0);
                             Point b = Iterables.get(commonEdge, 1);
@@ -100,28 +113,30 @@ public class Triangulation {
                                 continue;
                             }
 
-                            Triangle pqa = new Triangle(p, q, a);
-                            Triangle pqb = new Triangle(p, q, b);
-//                                            if (isCircleNotContainsPoints(Circle.getCircumcircle(pqa), pqa)) {
-//                                                r = a;
-//                                            } else if (isCircleNotContainsPoints(Circle.getCircumcircle(pqb), pqb)) {
-//                                                r = b;
-//                                            } else {
-//                                                continue;
-//                                            }
-                            if (Circle.getCircumcircle(pqa).doNotContainPoints(triangles)) {
+                            double ADistance = getDistanceToSegment(a, p, q);
+                            double BDistance = getDistanceToSegment(b, p, q);
+                            if (ADistance < BDistance) {
                                 r = a;
-                            } else if (Circle.getCircumcircle(pqb).doNotContainPoints(triangles)) {
-                                r = b;
                             } else {
-                                continue;
+                                r = b;
                             }
 
-                            if (!doIntersect(p, q, a, b) && (!outsidePoints.contains(p) || !outsidePoints.contains(q))) {
+                            if (!doIntersect(p, q, triangles) && !doIntersect(p, q, a, b) && (!outsidePoints.contains(p) || !outsidePoints.contains(q))) {
                                 outsidePoints.add(p);
                                 outsidePoints.add(q);
 
-                                addTriangle(p, q, r);
+                                Triangle tr = new Triangle(p, q, r);
+                                if (!triangles.contains(tr)) {
+                                    toWait();
+
+                                    tr = addTriangle(p, q, r);
+                                    Triangle neighbour = tr.getNeighbour(tr.getOppositeEdge(p));
+
+                                    if (neighbour != null) {
+                                        rebuildTriangles(tr, neighbour);
+                                        makeConvex(p, neighbour, tr);
+                                    }
+                                }
                             }
                         }
                     }
@@ -171,13 +186,8 @@ public class Triangulation {
     }
 
     private synchronized void rebuildTriangles(Triangle triangle1, Triangle triangle2) {
-        //if (!isCircleNotContainsPoints(triangle1.getCircumCircle(), triangle1) || !isCircleNotContainsPoints(triangle2.getCircumCircle(), triangle2)) {
         if (!triangle1.getCircumCircle().doNotContainPoints(triangles) || !triangle2.getCircumCircle().doNotContainPoints(triangles)) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new IllegalStateException(e);
-            }
+            toWait();
 
             removeTriangle(triangle1);
             removeTriangle(triangle2);
@@ -189,8 +199,6 @@ public class Triangulation {
 
             Triangle newTriangle1 = addTriangle(p1, p2, Iterables.get(commonEdge, 0));
             Triangle newTriangle2 = addTriangle(p1, p2, Iterables.get(commonEdge, 1));
-
-            //setWait(true);
 
             flip(newTriangle1, newTriangle2);
         }
@@ -210,11 +218,8 @@ public class Triangulation {
         Circle pabCircle = Circle.getCircumcircle(pab);
         circles.add(pabCircle);
         if (pabCircle.doNotContainPoints(triangles)) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new IllegalStateException(e);
-            }
+            toWait();
+
             triangles.add(pab);
             pabCircle.setColor(GRAY);
             pab.setCircumCircle(pabCircle);
@@ -225,28 +230,6 @@ public class Triangulation {
         }
 
         return null;
-    }
-
-    private boolean isCircleNotContainsPoints(Circle circle, Triangle triangle) {
-        for (Circle c : circles) {
-            if (!Arrays.equals(c.getColor(), RED) && c.containsSomePointOfTriangle(triangle)){
-                return false;
-            }
-        }
-
-        List<Point> points = triangles.stream()
-                .map(tr -> Arrays.asList(tr.getPoints()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-
-        Set<Point> trianglePoints = ImmutableSet.of(triangle.getFirst(), triangle.getSecond(), triangle.getThird());
-        for (Point point : points){
-            if (!trianglePoints.contains(point) && circle.containsPoint(point)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public List<Circle> getCircles() {

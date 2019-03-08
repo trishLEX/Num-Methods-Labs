@@ -1,13 +1,15 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+
+import javax.annotation.Nullable;
+
+import static ru.bmstu.mathmodeling.lab2.Utils.*;
 
 public class Triangle {
     private Point[] points;
@@ -19,10 +21,6 @@ public class Triangle {
         if (a.equals(b) || a.equals(c) || b.equals(c)) {
             throw new IllegalArgumentException("Wrong points");
         }
-
-//        a.addTriangle(this);
-//        b.addTriangle(this);
-//        c.addTriangle(this);
     }
 
     public Point getFirst() {
@@ -56,6 +54,42 @@ public class Triangle {
         result.remove(this);
 
         return result;
+    }
+
+    public Set<Point> getOppositeEdge(Point p) {
+        if (p.equals(points[0])) {
+            return Sets.newHashSet(points[1], points[2]);
+        } else if (p.equals(points[1])) {
+            return Sets.newHashSet(points[0], points[2]);
+        } else if (p.equals(points[2])) {
+            return Sets.newHashSet(points[0], points[1]);
+        } else {
+            throw new IllegalArgumentException(p + " is not contained in this triangle");
+        }
+    }
+
+    @Nullable
+    public Triangle getNeighbour(Set<Point> edge) {
+        Point a = Iterables.get(edge, 0);
+        Point b = Iterables.get(edge, 1);
+        if (!contains(a) || !contains(b)) {
+            throw new IllegalArgumentException("Wrong edge");
+        }
+
+        Set<Triangle> adjacentTrs1 = a.getTriangles();
+        Set<Triangle> adjacentTrs2 = b.getTriangles();
+
+        Set<Triangle> neighbours = new HashSet<>(Sets.intersection(adjacentTrs1, adjacentTrs2));
+        neighbours.remove(this);
+        if (neighbours.size() == 2) {
+            System.out.println();
+        }
+
+        if (neighbours.isEmpty()) {
+            return null;
+        } else {
+            return Iterables.getOnlyElement(neighbours);
+        }
     }
 
     //TODO можно добавить еще случай "на стороне треугольника" (одно из чисел будет 0)
@@ -99,19 +133,66 @@ public class Triangle {
         return points[0].hashCode() + points[1].hashCode() + points[2].hashCode();
     }
 
-    public Set<Point> getClosestEdge(Point point) {
-        Set<Point> closest = ImmutableSet.of(points[0], points[1]);
-        double min = Utils.getDistanceToSegment(point, points[0], points[1]);
+    public Set<Point> getClosestEdge(Point point, List<Triangle> triangles) {
+        Set<Point> closest = ImmutableSet.of();
+        double min = Double.MAX_VALUE;
 
-        double current = Utils.getDistanceToSegment(point, points[0], points[2]);
-        if (current < min) {
-            min = current;
-            closest = ImmutableSet.of(points[0], points[2]);
+        double current = getDistanceToSegment(point, points[0], points[1]);
+        if (!doIntersect(point, points[0], triangles) && !doIntersect(point, points[1], triangles)) {
+            if (Double.compare(current, min) == 0) {
+                double minSum = 0;
+                for (Point p : closest) {
+                    minSum += getDistance(point, p);
+                }
+
+                double curSum = getDistance(point, points[0]) + getDistance(point, points[1]);
+                if (curSum < minSum) {
+                    min = current;
+                    closest = ImmutableSet.of(points[0], points[1]);
+                }
+
+            } else if (current < min) {
+                min = current;
+                closest = ImmutableSet.of(points[0], points[1]);
+            }
         }
 
-        current = Utils.getDistanceToSegment(point, points[1], points[2]);
-        if (current < min) {
-            closest = ImmutableSet.of(points[1], points[2]);
+        current = getDistanceToSegment(point, points[0], points[2]);
+        if (!doIntersect(point, points[0], triangles) && !doIntersect(point, points[2], triangles)) {
+            if (Double.compare(current, min) == 0) {
+                double minSum = 0;
+                for (Point p : closest) {
+                    minSum += getDistance(point, p);
+                }
+
+                double curSum = getDistance(point, points[0]) + getDistance(point, points[2]);
+                if (curSum < minSum) {
+                    min = current;
+                    closest = ImmutableSet.of(points[0], points[2]);
+                }
+
+            } else if (current < min) {
+                min = current;
+                closest = ImmutableSet.of(points[0], points[2]);
+            }
+        }
+
+        current = getDistanceToSegment(point, points[1], points[2]);
+        if (!doIntersect(point, points[1], triangles) && !doIntersect(point, points[2], triangles)) {
+            if (Double.compare(current, min) == 0) {
+                double minSum = 0;
+                for (Point p : closest) {
+                    minSum += getDistance(point, p);
+                }
+
+                double curSum = getDistance(point, points[1]) + getDistance(point, points[2]);
+                if (curSum < minSum) {
+                    closest = ImmutableSet.of(points[1], points[2]);
+                }
+
+            } else if (current < min) {
+                closest = ImmutableSet.of(points[1], points[2]);
+            }
         }
 
         return closest;

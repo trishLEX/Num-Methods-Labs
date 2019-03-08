@@ -17,12 +17,12 @@ public class Utils {
 
     public static Triangle getClosestTriangle(Point point, List<Triangle> triangles) {
         Triangle closest = triangles.get(0);
-        double min = getDistanceToTriangle(point, closest);
+        double min = getDistanceToTriangle(point, closest, triangles);
 
         if (triangles.size() > 1) {
             for (int i = 1; i < triangles.size(); i++) {
                 Triangle triangle = triangles.get(i);
-                double distance = getDistanceToTriangle(point, triangle);
+                double distance = getDistanceToTriangle(point, triangle, triangles);
                 if (distance < min) {
                     min = distance;
                     closest = triangle;
@@ -32,8 +32,10 @@ public class Utils {
                     } else if (triangle.isPointInside(point)) {
                         return triangle;
                     } else {
-                        min = distance;
-                        closest = triangle;
+                        if (getDistanceToCenterOfMasses(point, triangle) < getDistanceToCenterOfMasses(point, closest)) {
+                            min = distance;
+                            closest = triangle;
+                        }
                     }
                 }
             }
@@ -42,13 +44,70 @@ public class Utils {
         return closest;
     }
 
-    public static double getDistanceToTriangle(Point point, Triangle triangle) {
-        List<Point> points = Lists.newArrayList(triangle.getPoints());
-        double min = getDistanceToSegment(point, points.get(0), points.get(1));
-        min = Math.min(min, getDistanceToSegment(point, points.get(0), points.get(2)));
-        min = Math.min(min, getDistanceToSegment(point, points.get(1), points.get(2)));
+    public static double getDistanceToTriangle(Point point, Triangle triangle, List<Triangle> triangles) {
+        Point[] points = triangle.getPoints();
+        double min = Double.MAX_VALUE;
+
+        double current = getDistanceToSegment(point, points[0], points[1]);
+        if (current < min && !doIntersect(point, points[0], triangles) && !doIntersect(point, points[1], triangles)) {
+            min = current;
+        }
+
+        current = getDistanceToSegment(point, points[0], points[2]);
+        if (current < min && !doIntersect(point, points[0], triangles) && !doIntersect(point, points[2], triangles)) {
+            min = current;
+        }
+
+        current = getDistanceToSegment(point, points[1], points[2]);
+        if (current < min && !doIntersect(point, points[1], triangles) && !doIntersect(point, points[2], triangles)) {
+            min = current;
+        }
 
         return min;
+    }
+
+    public static boolean doIntersect(Point a, Point b, List<Triangle> triangles) {
+        for (Triangle triangle : triangles) {
+            Point[] points = triangle.getPoints();
+            if (!a.equals(points[0])
+                    && !a.equals(points[1])
+                    && !b.equals(points[0])
+                    && !b.equals(points[1])
+                    && doIntersect(a, b, points[0], points[1]))
+            {
+                return true;
+            }
+
+            if (!a.equals(points[0])
+                    && !a.equals(points[2])
+                    && !b.equals(points[0])
+                    && !b.equals(points[2])
+                    && doIntersect(a, b, points[0], points[2])) {
+                return true;
+            }
+
+            if (!a.equals(points[2])
+                    && !a.equals(points[1])
+                    && !b.equals(points[2])
+                    && !b.equals(points[1])
+                    && doIntersect(a, b, points[1], points[2])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static double getDistanceToCenterOfMasses(Point point, Triangle triangle) {
+        Point[] points = triangle.getPoints();
+        double x = 0;
+        double y = 0;
+        for (Point point1 : points) {
+            x += point1.getX() / 3;
+            y += point1.getY() / 3;
+        }
+
+        return getDistance(point.getX(), point.getY(), x, y);
     }
 
     public static double getDistanceToSegment(Point point, Point start, Point end) {
@@ -65,6 +124,14 @@ public class Utils {
         } else {
             return Double.min(point.getDistance(start), point.getDistance(end));
         }
+    }
+
+    public static double getDistanceToSegment(Point point, Set<Point> segment) {
+        if (segment.size() != 2) {
+            throw new IllegalArgumentException("Segment must contain 2 points");
+        }
+
+        return getDistanceToSegment(point, Iterables.get(segment, 0), Iterables.get(segment, 1));
     }
 
     public static double getDistance(double x1, double y1, double x2, double y2) {
