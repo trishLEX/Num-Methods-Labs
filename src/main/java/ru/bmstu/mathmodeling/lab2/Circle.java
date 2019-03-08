@@ -39,7 +39,7 @@ public class Circle {
         return color;
     }
 
-    public boolean doNotContainPoints(List<Triangle> triangles) {
+    public boolean doNotContainPoints(Collection<Triangle> triangles) {
         Set<Point> points = triangles.stream()
                 .map(tr -> Arrays.asList(tr.getPoints()))
                 .flatMap(Collection::stream)

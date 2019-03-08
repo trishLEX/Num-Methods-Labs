@@ -2,6 +2,7 @@ package ru.bmstu.mathmodeling.lab2;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -15,13 +16,14 @@ public class Utils {
         //utility class
     }
 
-    public static Triangle getClosestTriangle(Point point, List<Triangle> triangles) {
-        Triangle closest = triangles.get(0);
+    public static Triangle getClosestTriangle(Point point, Collection<Triangle> triangles) {
+        Triangle closest = Iterables.get(triangles, 0);
         double min = getDistanceToTriangle(point, closest, triangles);
 
         if (triangles.size() > 1) {
-            for (int i = 1; i < triangles.size(); i++) {
-                Triangle triangle = triangles.get(i);
+            Collection<Triangle> otherTriangles = Sets.newHashSet(triangles);
+            otherTriangles.remove(closest);
+            for (Triangle triangle : otherTriangles) {
                 double distance = getDistanceToTriangle(point, triangle, triangles);
                 if (distance < min) {
                     min = distance;
@@ -44,7 +46,7 @@ public class Utils {
         return closest;
     }
 
-    public static double getDistanceToTriangle(Point point, Triangle triangle, List<Triangle> triangles) {
+    public static double getDistanceToTriangle(Point point, Triangle triangle, Collection<Triangle> triangles) {
         Point[] points = triangle.getPoints();
         double min = Double.MAX_VALUE;
 
@@ -66,7 +68,7 @@ public class Utils {
         return min;
     }
 
-    public static boolean doIntersect(Point a, Point b, List<Triangle> triangles) {
+    public static boolean doIntersect(Point a, Point b, Collection<Triangle> triangles) {
         for (Triangle triangle : triangles) {
             Point[] points = triangle.getPoints();
             if (!a.equals(points[0])
@@ -216,8 +218,8 @@ public class Utils {
         double val = (q.getY() - p.getY()) * (r.getX() - q.getX()) -
                 (q.getX() - p.getX()) * (r.getY() - q.getY());
 
-        if (val == 0) return 0;  // colinear
+        if (val == 0) return 0;
 
-        return (val > 0)? 1 : 2; // clock or counterclock wise
+        return (val > 0)? 1 : 2;
     }
 }

@@ -13,14 +13,14 @@ import static ru.bmstu.mathmodeling.lab2.Utils.*;
 
 @ParametersAreNonnullByDefault
 public class Triangulation {
-    private List<Circle> circles;
-    private List<Triangle> triangles;
+    private Set<Circle> circles;
+    private Set<Triangle> triangles;
     private List<Point> points;
 
     public Triangulation(List<Point> points) {
         this.points = points;
-        this.circles = new CopyOnWriteArrayList<>();
-        this.triangles = new CopyOnWriteArrayList<>();
+        this.circles = Sets.newConcurrentHashSet();
+        this.triangles = Sets.newConcurrentHashSet();
     }
 
     private synchronized void toWait() {
@@ -83,16 +83,6 @@ public class Triangulation {
                                     makeConvex(point, neighbour, newTr);
                                 }
                             }
-
-//                            Triangle neighbour1 = triangle1.getNeighbour(triangle1.getOppositeEdge(point));
-//                            if (neighbour1 != null) {
-//                                makeConvex(point, neighbour1, triangle1);
-//                            }
-//
-//                            Triangle neighbour2 = triangle2.getNeighbour(triangle2.getOppositeEdge(point));
-//                            if (neighbour2 != null) {
-//                                makeConvex(point, neighbour2, triangle2);
-//                            }
                         } else {
                             makeConvex(point, triangle, newTriangle);
                         }
@@ -265,11 +255,11 @@ public class Triangulation {
         return null;
     }
 
-    public List<Circle> getCircles() {
+    public Set<Circle> getCircles() {
         return circles;
     }
 
-    public List<Triangle> getTriangles() {
+    public Set<Triangle> getTriangles() {
         return triangles;
     }
 }

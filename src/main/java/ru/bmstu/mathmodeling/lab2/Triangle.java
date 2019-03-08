@@ -94,7 +94,6 @@ public class Triangle {
         }
     }
 
-    //TODO можно добавить еще случай "на стороне треугольника" (одно из чисел будет 0)
     public boolean isPointInside(Point point) {
         double a = (points[0].getX() - point.getX()) * (points[1].getY() - points[0].getY())
                 - (points[1].getX() - points[0].getX()) * (points[0].getY() - point.getY());
@@ -105,11 +104,7 @@ public class Triangle {
         double c = (points[2].getX() - point.getX()) * (points[0].getY() - points[2].getY())
                 - (points[0].getX() - points[2].getX()) * (points[2].getY() - point.getY());
 
-        if (a >= 0 && b >= 0 && c >= 0 || a < 0 && b < 0 && c < 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return a >= 0 && b >= 0 && c >= 0 || a < 0 && b < 0 && c < 0;
     }
 
     public boolean contains(Point point) {
@@ -135,7 +130,7 @@ public class Triangle {
         return points[0].hashCode() + points[1].hashCode() + points[2].hashCode();
     }
 
-    public Set<Point> getClosestEdge(Point point, List<Triangle> triangles) {
+    public Set<Point> getClosestEdge(Point point, Collection<Triangle> triangles) {
         Set<Point> closest = ImmutableSet.of();
         double min = Double.MAX_VALUE;
 
