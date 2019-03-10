@@ -1,36 +1,40 @@
 package ru.bmstu.nummethodslabs.simplex;
 
 public class NMSimplex {
-    private static final int MAX_IT = 1000;      /* maximum number of iterations */
-    private static final double ALPHA = 1.0;       /* reflection coefficient */
-    private static final double BETA = 0.5;       /* contraction coefficient */
-    private static final double GAMMA = 2.0;       /* expansion coefficient */
+    private static final int MAX_IT = 1000;
+    private static final double ALPHA = 1.0;
+    private static final double BETA = 0.5;
+    private static final double GAMMA = 2.0;
+
+    private double rosenbrock(double[] x){
+        double sum = 80;
+        double a = 30;
+        double b = 2;
+        for (int i = 0; i < 3; i++) {
+            sum += a * Math.pow(x[i] * x[i] - x[i+1], 2) + b * Math.pow(x[i] - 1, 2);
+        }
+
+        return sum;
+    }
 
     public NMSimplex(double[] start, int n, double EPSILON, double scale) {
-        Constraint c = new Constraint();
-        Objfunc objf = new Objfunc();
-
-
         double[][] v = new double[n + 1][n];
         double[] f = new double[n + 1];
         double[] vr = new double[n];
         double[] ve = new double[n];
         double[] vc = new double[n];
         double[] vm = new double[n];
-        double fr;      /* value of function at reflection point */
-        double fe;      /* value of function at expansion point */
-        double fc;      /* value of function at contraction point */
-        double pn, qn;   /* values used to create initial simplex */
+        double fr;
+        double fe;
+        double fc;
+        double pn, qn;
         double fsum, favg, s, cent;
-        int vs;         /* vertex with smallest value */
-        int vh;         /* vertex with next smallest value */
-        int vg;         /* vertex with largest value */
+        int vs;
+        int vh;
+        int vg;
         int i, j, m, row = 0;
-        int k;          /* track the number of function evaluations */
-        int itr;          /* track the number of iterations */
-
-        /* create the initial simplex */
-        /* assume one of the vertices is 0,0 */
+        int k;
+        int itr;
 
         System.out.format("Starting from : %f\n", start[0]);
 
@@ -41,8 +45,6 @@ public class NMSimplex {
             v[0][i] = start[i];
         }
 
-        //System.out.format("pn:%f qn:%f\n",pn,qn);
-
         for (i = 1; i <= n; i++) {
             for (j = 0; j < n; j++) {
                 if (i - 1 == j) {
@@ -51,17 +53,14 @@ public class NMSimplex {
                     v[i][j] = qn + start[j];
                 }
             }
-            c.getConstrainedValues(v[i], n);
         }
 
-        /* find the initial function values */
         for (j = 0; j <= n; j++) {
-            f[j] = objf.evalObjfun(v[j]);
+            f[j] = rosenbrock(v[j]);
         }
 
         k = n + 1;
 
-        /* print out the initial values */
         System.out.println("Initial Values");
         for (j = 0; j <= n; j++) {
             for (i = 0; i < n; i++) {
@@ -69,9 +68,7 @@ public class NMSimplex {
             }
         }
 
-        /* begin the main loop of the minimization */
         for (itr = 1; itr <= MAX_IT; itr++) {
-            /* find the index of the largest value */
             vg = 0;
             for (j = 0; j <= n; j++) {
                 if (f[j] > f[vg]) {
@@ -79,7 +76,6 @@ public class NMSimplex {
                 }
             }
 
-            /* find the index of the smallest value */
             vs = 0;
             for (j = 0; j <= n; j++) {
                 if (f[j] < f[vs]) {
@@ -87,7 +83,6 @@ public class NMSimplex {
                 }
             }
 
-            /* find the index of the second largest value */
             vh = vs;
             for (j = 0; j <= n; j++) {
                 if (f[j] > f[vh] && f[j] < f[vg]) {
@@ -95,7 +90,6 @@ public class NMSimplex {
                 }
             }
 
-            /* calculate the centroid */
             for (j = 0; j <= n - 1; j++) {
                 cent = 0.0;
                 for (m = 0; m <= n; m++) {
@@ -106,14 +100,11 @@ public class NMSimplex {
                 vm[j] = cent / n;
             }
 
-            /* reflect vg to new vertex vr */
             for (j = 0; j <= n - 1; j++) {
-                /*vr[j] = (1+ALPHA)*vm[j] - ALPHA*v[vg][j];*/
                 vr[j] = vm[j] + ALPHA * (vm[j] - v[vg][j]);
             }
 
-            c.getConstrainedValues(vr, n);
-            fr = objf.evalObjfun(vr);
+            fr = rosenbrock(vr);
             k++;
 
             if (fr < f[vh] && fr >= f[vs]) {
@@ -123,20 +114,13 @@ public class NMSimplex {
                 f[vg] = fr;
             }
 
-            /* investigate a step further in this direction */
             if (fr < f[vs]) {
                 for (j = 0; j <= n - 1; j++) {
-                    /*ve[j] = GAMMA*vr[j] + (1-GAMMA)*vm[j];*/
                     ve[j] = vm[j] + GAMMA * (vr[j] - vm[j]);
                 }
 
-                c.getConstrainedValues(ve, n);
-                fe = objf.evalObjfun(ve);
+                fe = rosenbrock(ve);
                 k++;
-
-  			/* by making fe < fr as opposed to fe < f[vs], 			   
-  			   Rosenbrocks function takes 63 iterations as opposed 
-  			   to 64 when using double variables. */
 
                 if (fe < fr) {
                     for (j = 0; j <= n - 1; j++) {
@@ -151,27 +135,20 @@ public class NMSimplex {
                 }
             }
 
-            /* check to see if a contraction is necessary */
             if (fr >= f[vh]) {
                 if (fr < f[vg] && fr >= f[vh]) {
-                    /* perform outside contraction */
                     for (j = 0; j <= n - 1; j++) {
-                        /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j];*/
                         vc[j] = vm[j] + BETA * (vr[j] - vm[j]);
                     }
 
-                    c.getConstrainedValues(vc, n);
-                    fc = objf.evalObjfun(vc);
+                    fc = rosenbrock(vc);
                     k++;
                 } else {
-                    /* perform inside contraction */
                     for (j = 0; j <= n - 1; j++) {
-                        /*vc[j] = BETA*v[vg][j] + (1-BETA)*vm[j];*/
                         vc[j] = vm[j] - BETA * (vm[j] - v[vg][j]);
                     }
 
-                    c.getConstrainedValues(vc, n);
-                    fc = objf.evalObjfun(vc);
+                    fc = rosenbrock(vc);
                     k++;
                 }
 
@@ -192,17 +169,14 @@ public class NMSimplex {
                         }
                     }
 
-                    c.getConstrainedValues(v[vg], n);
-                    f[vg] = objf.evalObjfun(v[vg]);
+                    f[vg] = rosenbrock(v[vg]);
                     k++;
 
-                    c.getConstrainedValues(v[vh], n);
-                    f[vh] = objf.evalObjfun(v[vh]);
+                    f[vh] = rosenbrock(v[vh]);
                     k++;
                 }
             }
 
-            /* print out the value at each iteration */
             System.out.format("Iteration %d\n", itr);
             for (j = 0; j <= n; j++) {
                 for (i = 0; i < n; i++) {
@@ -210,7 +184,6 @@ public class NMSimplex {
                 }
             }
 
-            /* test for convergence */
             fsum = 0.0;
             for (j = 0; j <= n; j++) {
                 fsum += f[j];
@@ -223,9 +196,7 @@ public class NMSimplex {
             s = Math.sqrt(s);
             if (s < EPSILON) break;
         }
-        /* end main loop of the minimization */
 
-        /* find the index of the smallest value */
         vs = 0;
         for (j = 0; j <= n; j++) {
             if (f[j] < f[vs]) {
@@ -238,12 +209,11 @@ public class NMSimplex {
             System.out.format("%.2f\n", v[vs][j]);
             start[j] = v[vs][j];
         }
-        //min=objf.evalObjfun(v[vs]);
         k++;
         System.out.format("%d Function Evaluations\n", k);
         System.out.format("%d Iterations through program\n", itr);
-
-        //return min;
+        System.out.println(rosenbrock(start));
+        System.out.println(rosenbrock(new double[]{1, 1, 1, 1}) - rosenbrock(start));
     }
 
 }

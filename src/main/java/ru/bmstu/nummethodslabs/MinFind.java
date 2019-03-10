@@ -3,6 +3,7 @@ package ru.bmstu.nummethodslabs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import com.google.common.collect.Lists;
 
@@ -21,15 +22,15 @@ public class MinFind {
     }
 
     public static void main(String[] args) {
-        double[] segment = svenn(X_0, DELTA);
+        double[] segment = svenn(X_0, DELTA, MinFind::f);
         System.out.println("SVENN: " + Arrays.toString(segment));
-        double b = bisection(segment[0], segment[1], 0);
+        double b = bisection(segment[0], segment[1], 0, MinFind::f);
         System.out.println("BISECTION: " + b + " error: " + Math.abs(b -
                 7.56001) + " min: " + f(b));
-        double g = golden(segment[0], segment[1], 0);
+        double g = golden(segment[0], segment[1], 0, MinFind::f);
         System.out.println("GOLDEN: " + g + " error: " + Math.abs(g -
                 7.56001) + " min: " + f(g));
-        double f = fibonacci(segment[0], segment[1]);
+        double f = fibonacci(segment[0], segment[1], MinFind::f);
         System.out.println("FIBONACCI: " + f + " error: " + Math.abs(f -
                 7.56001) + " min: " + f(f));
 
@@ -39,11 +40,11 @@ public class MinFind {
         System.out.println(coordinate1 + " " + Math.abs(coordinate1.x - 7.56001));
     }
 
-    private static double[] svenn(double xPrev, double delta) {
+    public static double[] svenn(double xPrev, double delta, Function<Double, Double> f) {
         double xCur;
-        if (f(xPrev + delta) < f(xPrev)) {
+        if (f.apply(xPrev + delta) < f.apply(xPrev)) {
             xCur = xPrev + delta;
-        } else if (f(xPrev - delta) < f(xPrev)) {
+        } else if (f.apply(xPrev - delta) < f.apply(xPrev)) {
             delta = -delta;
             xCur = xPrev + delta;
         } else {
@@ -64,7 +65,7 @@ public class MinFind {
             double temp = xCur;
             xCur = xNext;
             xPrev = temp;
-        } while ((f(xPrev) > f(xCur)));
+        } while ((f.apply(xPrev) > f.apply(xCur)));
 
         if (xPrev < xNext) {
             return new double[]{xPrev, xNext};
@@ -73,35 +74,33 @@ public class MinFind {
         }
     }
 
-    private static double bisection(double a, double b, int n) {
-        System.out.println("BISECTION: " + n);
+    public static double bisection(double a, double b, int n, Function<Double, Double> f) {
         double x = (a + b) / 2;
         if (Math.abs(a - b) < E)
             return x;
         else {
-            if (f(x) < f(x + E))
-                return bisection(a, x, ++n);
+            if (f.apply(x) < f.apply(x + E))
+                return bisection(a, x, ++n, f);
             else
-                return bisection(x, b, ++n);
+                return bisection(x, b, ++n, f);
         }
     }
 
-    private static double golden(double a, double b, int n) {
-        System.out.println("GOLDEN: " + n);
+    public static double golden(double a, double b, int n, Function<Double, Double> f) {
         double x = (a + b) / 2;
         if (Math.abs(a - b) < E)
             return x;
         else {
             double alpha = a + 2 / (3 + Math.sqrt(5)) * (b - a);
             double beta  = a + 2 / (1 + Math.sqrt(5)) * (b - a);
-            if (f(alpha) > f(beta))
-                return golden(alpha, b, ++n);
+            if (f.apply(alpha) > f.apply(beta))
+                return golden(alpha, b, ++n, f);
             else
-                return golden(a, beta, ++n);
+                return golden(a, beta, ++n, f);
         }
     }
 
-    private static double fibonacci(double a, double b) {
+    public static double fibonacci(double a, double b, Function<Double, Double> f) {
         List<Double> numbers = new ArrayList<>();
         numbers.add(0.0);
         numbers.add(1.0);
@@ -117,7 +116,7 @@ public class MinFind {
         double right = a + numbers.get(count - 3) / numbers.get(count - 2) * Math.abs(b - a);
 
         do {
-            if (f(left) <= f(right)) {
+            if (f.apply(left) <= f.apply(right)) {
                 b = right;
                 right = left;
                 left = a + numbers.get(count - k - 4) / numbers.get(count - k - 2) * Math.abs(b - a);
@@ -132,7 +131,7 @@ public class MinFind {
 
         right = left + E;
 
-        if (f(left) <= f(right)) {
+        if (f.apply(left) <= f.apply(right)) {
             b = right;
         } else {
             a = left;
