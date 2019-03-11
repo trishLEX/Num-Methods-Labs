@@ -1,17 +1,21 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import java.util.*;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static ru.bmstu.common.Drawer.BLACK;
 import static ru.bmstu.mathmodeling.lab2.Utils.*;
 
 public class Triangle {
+    private static final double EPSILON = 0.5;
+
     private Point[] points;
     private double[] color;
     private Circle circumCircle;
@@ -94,17 +98,30 @@ public class Triangle {
         }
     }
 
-    public boolean isPointInside(Point point) {
+    public PointPlace isPointInside(Point point) {
         double a = (points[0].getX() - point.getX()) * (points[1].getY() - points[0].getY())
                 - (points[1].getX() - points[0].getX()) * (points[0].getY() - point.getY());
+        if (a < 100 && getDistanceToSegment(point, points[0], points[1]) < EPSILON) {
+            return PointPlace.ON_EDGE;
+        }
 
         double b = (points[1].getX() - point.getX()) * (points[2].getY() - points[1].getY())
                 - (points[2].getX() - points[1].getX()) * (points[1].getY() - point.getY());
+        if (b < 100 && getDistanceToSegment(point, points[1], points[2]) < EPSILON) {
+            return PointPlace.ON_EDGE;
+        }
 
         double c = (points[2].getX() - point.getX()) * (points[0].getY() - points[2].getY())
                 - (points[0].getX() - points[2].getX()) * (points[2].getY() - point.getY());
+        if (c < 100 && getDistanceToSegment(point, points[0], points[2]) < EPSILON) {
+            return PointPlace.ON_EDGE;
+        }
 
-        return a >= 0 && b >= 0 && c >= 0 || a < 0 && b < 0 && c < 0;
+        if (a > 0 && b > 0 && c > 0 || a < 0 && b < 0 && c < 0) {
+            return PointPlace.INSIDE;
+        } else {
+            return PointPlace.OUTSIDE;
+        }
     }
 
     public boolean contains(Point point) {

@@ -1,14 +1,11 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collection;
+import java.util.Set;
 
 @ParametersAreNonnullByDefault
 public class Utils {
@@ -29,9 +26,11 @@ public class Utils {
                     min = distance;
                     closest = triangle;
                 } else if (Double.compare(distance, min) == 0) {
-                    if (closest.isPointInside(point)) {
+                    PointPlace closestPlace = closest.isPointInside(point);
+                    PointPlace trianglePlace = triangle.isPointInside(point);
+                    if (closestPlace == PointPlace.INSIDE || closestPlace == PointPlace.ON_EDGE) {
                         return closest;
-                    } else if (triangle.isPointInside(point)) {
+                    } else if (trianglePlace == PointPlace.INSIDE || trianglePlace == PointPlace.ON_EDGE) {
                         return triangle;
                     } else {
                         if (getDistanceToCenterOfMasses(point, triangle) < getDistanceToCenterOfMasses(point, closest)) {

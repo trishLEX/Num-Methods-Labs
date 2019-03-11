@@ -1,11 +1,14 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import com.google.common.collect.*;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static ru.bmstu.common.Drawer.*;
 import static ru.bmstu.mathmodeling.lab2.Main.MAKE_STEPS;
@@ -34,7 +37,7 @@ public class Triangulation {
     }
 
     public void triangulate() {
-        points.sort(Comparator.comparingLong(Point::getZCode));
+//        points.sort(Comparator.comparingLong(Point::getZCode));
         System.out.println(points);
 
         addTriangleWithCircle(points.subList(0, 3));
@@ -43,13 +46,21 @@ public class Triangulation {
             for (int i = 3; i < points.size(); i++) {
                 Point point = points.get(i);
                 Triangle triangle = Utils.getClosestTriangle(point, triangles);
-                    if (triangle.isPointInside(point)) {
+                switch (triangle.isPointInside(point)) {
+                    case INSIDE:
+                        toWait();
                         removeTriangle(triangle);
 
-                        addTriangle(point, triangle.getFirst(), triangle.getSecond());
-                        addTriangle(point, triangle.getFirst(), triangle.getThird());
-                        addTriangle(point, triangle.getSecond(), triangle.getThird());
-                    } else {
+                        Triangle first = addTriangle(point, triangle.getFirst(), triangle.getSecond());
+                        Triangle second = addTriangle(point, triangle.getFirst(), triangle.getThird());
+                        Triangle third = addTriangle(point, triangle.getSecond(), triangle.getThird());
+
+                        checkInnerTriangles(point, first);
+                        checkInnerTriangles(point, second);
+                        checkInnerTriangles(point, third);
+
+                        break;
+                    case OUTSIDE:
                         Set<Point> closestEdge = triangle.getClosestEdge(point, triangles);
 
                         Point edgePoint1 = Iterables.get(closestEdge, 0);
@@ -64,16 +75,8 @@ public class Triangulation {
 
                             Point mid = triangle.getLastPoint(closestEdge);
 
-                            if (point.getX() == 599) {
-                                System.out.println();
-                            }
-
                             Triangle triangle1 = addTriangle(point, mid, edgePoint1);
                             Triangle triangle2 = addTriangle(point, mid, edgePoint2);
-
-                            if (point.getX() == 599) {
-                                System.out.println();
-                            }
 
                             flip(triangle1, triangle2);
 
@@ -86,7 +89,36 @@ public class Triangulation {
                         } else {
                             makeConvex(point, triangle, newTriangle);
                         }
-                    }
+                        break;
+                    case ON_EDGE:
+                        Set<Point> edge = triangle.getClosestEdge(point, triangles);
+                        Point opposite = triangle.getLastPoint(edge);
+
+                        removeTriangle(triangle);
+                        Triangle triangle1 = addTriangle(point, opposite, Iterables.get(edge, 0));
+                        Triangle triangle2 = addTriangle(point, opposite, Iterables.get(edge, 1));
+
+//                        checkInnerTriangles(point, triangle1);
+//                        checkInnerTriangles(point, triangle2);
+
+//                        for (Triangle newTr : Sets.newHashSet(point.getTriangles())) {
+//                            Triangle neighbour = newTr.getNeighbour(newTr.getOppositeEdge(point));
+//                            if (neighbour != null) {
+//                                makeConvex(point, neighbour, newTr);
+//                            }
+//                        }
+
+                        break;
+                }
+            }
+        }
+    }
+
+    private void checkInnerTriangles(Point point, Triangle triangle) {
+        if (triangles.contains(triangle) && !triangle.getCircumCircle().doNotContainPoints(triangles)) {
+            Triangle neighbour = triangle.getNeighbour(triangle.getOppositeEdge(point));
+            if (neighbour != null) {
+                rebuildTriangles(triangle, neighbour);
             }
         }
     }
@@ -183,19 +215,26 @@ public class Triangulation {
         neighbours1.remove(triangle2);
 
         for (Triangle neighbour : neighbours1) {
-            rebuildTriangles(triangle1, neighbour);
+            if (triangles.contains(neighbour)) {
+                rebuildTriangles(triangle1, neighbour);
+            }
         }
 
         Set<Triangle> neighbours2 = triangle2.getNeighbours();
         neighbours2.remove(triangle1);
 
         for (Triangle neighbour : neighbours2) {
-            rebuildTriangles(triangle2, neighbour);
+            if (triangles.contains(neighbour)) {
+                rebuildTriangles(triangle2, neighbour);
+            }
         }
     }
 
     private void rebuildTriangles(Triangle triangle1, Triangle triangle2) {
-        if (!triangle1.getCircumCircle().doNotContainPoints(triangles) || !triangle2.getCircumCircle().doNotContainPoints(triangles)) {
+        if (triangles.contains(triangle1)
+                && triangles.contains(triangle2)
+                && (!triangle1.getCircumCircle().doNotContainPoints(triangles) || !triangle2.getCircumCircle().doNotContainPoints(triangles)))
+        {
             triangle1.setColor(RED);
             triangle2.setColor(RED);
             toWait();

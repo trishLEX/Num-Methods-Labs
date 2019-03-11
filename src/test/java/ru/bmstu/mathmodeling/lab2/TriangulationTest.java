@@ -279,6 +279,274 @@ public class TriangulationTest {
         points.add(new Point(689, 629));
     }
 
+    @Test
+    public void test30Points2() {
+        points.add(new Point(80, 21));
+        points.add(new Point(188, 22));
+        points.add(new Point(154, 187));
+        points.add(new Point(279, 39));
+        points.add(new Point(419, 28));
+        points.add(new Point(458, 127));
+        points.add(new Point(328, 138));
+        points.add(new Point(484, 143));
+        points.add(new Point(24, 275));
+        points.add(new Point(245, 345));
+        points.add(new Point(201, 364));
+        points.add(new Point(97, 466));
+        points.add(new Point(64, 482));
+        points.add(new Point(405, 261));
+        points.add(new Point(367, 409));
+        points.add(new Point(289, 495));
+        points.add(new Point(578, 78));
+        points.add(new Point(683, 18));
+        points.add(new Point(699, 201));
+        points.add(new Point(628, 291));
+        points.add(new Point(551, 366));
+        points.add(new Point(629, 362));
+        points.add(new Point(121, 540));
+        points.add(new Point(223, 615));
+        points.add(new Point(302, 611));
+        points.add(new Point(451, 531));
+        points.add(new Point(408, 674));
+        points.add(new Point(581, 542));
+        points.add(new Point(610, 572));
+        points.add(new Point(703, 626));
+    }
+    
+    @Test
+    public void test40Points() {
+        points.add(new Point(5, 114));
+        points.add(new Point(220, 15));
+        points.add(new Point(200, 68));
+        points.add(new Point(38, 248));
+        points.add(new Point(198, 131));
+        points.add(new Point(329, 1));
+        points.add(new Point(429, 96));
+        points.add(new Point(292, 237));
+        points.add(new Point(340, 207));
+        points.add(new Point(407, 182));
+        points.add(new Point(467, 187));
+        points.add(new Point(102, 280));
+        points.add(new Point(237, 371));
+        points.add(new Point(102, 388));
+        points.add(new Point(99, 469));
+        points.add(new Point(317, 323));
+        points.add(new Point(459, 275));
+        points.add(new Point(311, 463));
+        points.add(new Point(491, 406));
+        points.add(new Point(507, 509));
+        points.add(new Point(528, 71));
+        points.add(new Point(696, 39));
+        points.add(new Point(552, 293));
+        points.add(new Point(516, 375));
+        points.add(new Point(644, 276));
+        points.add(new Point(667, 348));
+        points.add(new Point(545, 497));
+        points.add(new Point(694, 494));
+        points.add(new Point(5, 595));
+        points.add(new Point(113, 595));
+        points.add(new Point(226, 587));
+        points.add(new Point(127, 667));
+        points.add(new Point(242, 701));
+        points.add(new Point(380, 600));
+        points.add(new Point(356, 663));
+        points.add(new Point(442, 687));
+        points.add(new Point(578, 563));
+        points.add(new Point(679, 609));
+        points.add(new Point(597, 676));
+        points.add(new Point(670, 709));
+    }
+    
+    @Test
+    public void test50Points() {
+        points.add(new Point(22, 13));
+        points.add(new Point(143, 33));
+        points.add(new Point(214, 79));
+        points.add(new Point(20, 166));
+        points.add(new Point(0, 195));
+        points.add(new Point(129, 144));
+        points.add(new Point(232, 153));
+        points.add(new Point(182, 222));
+        points.add(new Point(144, 248));
+        points.add(new Point(324, 28));
+        points.add(new Point(297, 99));
+        points.add(new Point(361, 188));
+        points.add(new Point(323, 213));
+        points.add(new Point(386, 146));
+        points.add(new Point(112, 359));
+        points.add(new Point(103, 379));
+        points.add(new Point(202, 282));
+        points.add(new Point(6, 441));
+        points.add(new Point(136, 496));
+        points.add(new Point(339, 316));
+        points.add(new Point(322, 364));
+        points.add(new Point(389, 343));
+        points.add(new Point(487, 335));
+        points.add(new Point(316, 495));
+        points.add(new Point(367, 508));
+        points.add(new Point(388, 408));
+        points.add(new Point(563, 39));
+        points.add(new Point(536, 126));
+        points.add(new Point(710, 0));
+        points.add(new Point(682, 108));
+        points.add(new Point(548, 225));
+        points.add(new Point(602, 301));
+        points.add(new Point(581, 372));
+        points.add(new Point(643, 262));
+        points.add(new Point(696, 333));
+        points.add(new Point(522, 417));
+        points.add(new Point(584, 475));
+        points.add(new Point(15, 537));
+        points.add(new Point(79, 611));
+        points.add(new Point(94, 652));
+        points.add(new Point(254, 695));
+        points.add(new Point(295, 551));
+        points.add(new Point(431, 619));
+        points.add(new Point(366, 650));
+        points.add(new Point(309, 717));
+        points.add(new Point(507, 668));
+        points.add(new Point(533, 545));
+        points.add(new Point(616, 567));
+        points.add(new Point(553, 671));
+        points.add(new Point(656, 642));
+    }
+
+    @Test
+    public void test52Points() {
+        points.add(new Point(5, 114));
+        points.add(new Point(220, 15));
+        points.add(new Point(200, 68));
+        points.add(new Point(38, 248));
+        points.add(new Point(198, 131));
+        points.add(new Point(329, 1));
+        points.add(new Point(429, 96));
+        points.add(new Point(292, 237));
+        points.add(new Point(340, 207));
+        points.add(new Point(407, 182));
+        points.add(new Point(467, 187));
+        points.add(new Point(102, 280));
+        points.add(new Point(237, 371));
+        points.add(new Point(102, 388));
+        points.add(new Point(99, 469));
+        points.add(new Point(317, 323));
+        points.add(new Point(459, 275));
+        points.add(new Point(311, 463));
+        points.add(new Point(491, 406));
+        points.add(new Point(507, 509));
+        points.add(new Point(528, 71));
+        points.add(new Point(696, 39));
+        points.add(new Point(552, 293));
+        points.add(new Point(516, 375));
+        points.add(new Point(644, 276));
+        points.add(new Point(667, 348));
+        points.add(new Point(545, 497));
+        points.add(new Point(694, 494));
+        points.add(new Point(5, 595));
+        points.add(new Point(113, 595));
+        points.add(new Point(226, 587));
+        points.add(new Point(127, 667));
+        points.add(new Point(242, 701));
+        points.add(new Point(380, 600));
+        points.add(new Point(356, 663));
+        points.add(new Point(442, 687));
+        points.add(new Point(578, 563));
+        points.add(new Point(679, 609));
+        points.add(new Point(597, 676));
+        points.add(new Point(670, 709));
+
+        points.add(new Point(616, 590));
+        points.add(new Point(563, 467));
+        points.add(new Point(576, 378));
+        points.add(new Point(653, 306));
+        points.add(new Point(446, 268));
+        points.add(new Point(374, 308));
+        points.add(new Point(236, 303));
+        points.add(new Point(283, 410));
+        points.add(new Point(219, 422));
+        points.add(new Point(103, 503));
+        points.add(new Point(104, 558));
+        points.add(new Point(155, 163));
+        points.add(new Point(643, 273));
+    }
+
+    @Test
+    public void test70Points() {
+        points.add(new Point(22, 13));
+        points.add(new Point(143, 33));
+        points.add(new Point(214, 79));
+        points.add(new Point(20, 166));
+        points.add(new Point(0, 195));
+        points.add(new Point(129, 144));
+        points.add(new Point(232, 153));
+        points.add(new Point(182, 222));
+        points.add(new Point(144, 248));
+        points.add(new Point(324, 28));
+        points.add(new Point(297, 99));
+        points.add(new Point(361, 188));
+        points.add(new Point(323, 213));
+        points.add(new Point(386, 146));
+        points.add(new Point(112, 359));
+        points.add(new Point(103, 379));
+        points.add(new Point(202, 282));
+        points.add(new Point(6, 441));
+        points.add(new Point(136, 496));
+        points.add(new Point(339, 316));
+        points.add(new Point(322, 364));
+        points.add(new Point(389, 343));
+        points.add(new Point(487, 335));
+        points.add(new Point(316, 495));
+        points.add(new Point(367, 508));
+        points.add(new Point(388, 408));
+        points.add(new Point(563, 39));
+        points.add(new Point(536, 126));
+        points.add(new Point(710, 0));
+        points.add(new Point(682, 108));
+        points.add(new Point(548, 225));
+        points.add(new Point(602, 301));
+        points.add(new Point(581, 372));
+        points.add(new Point(643, 262));
+        points.add(new Point(696, 333));
+        points.add(new Point(522, 417));
+        points.add(new Point(584, 475));
+        points.add(new Point(15, 537));
+        points.add(new Point(79, 611));
+        points.add(new Point(94, 652));
+        points.add(new Point(254, 695));
+        points.add(new Point(295, 551));
+        points.add(new Point(431, 619));
+        points.add(new Point(366, 650));
+        points.add(new Point(309, 717));
+        points.add(new Point(507, 668));
+        points.add(new Point(533, 545));
+        points.add(new Point(616, 567));
+        points.add(new Point(553, 671));
+        points.add(new Point(656, 642));
+
+        points.add(new Point(176, 311));
+        points.add(new Point(263, 268));
+        points.add(new Point(166, 156));
+        points.add(new Point(217, 78));
+        points.add(new Point(412, 650));
+        points.add(new Point(644, 152));
+        points.add(new Point(672, 466));
+        points.add(new Point(654, 671));
+
+        points.add(new Point(420, 672));
+        points.add(new Point(171, 156));
+        points.add(new Point(698, 700));
+
+        points.add(new Point(123, 699));
+        points.add(new Point(26, 703));
+        points.add(new Point(13, 619));
+        points.add(new Point(406, 69));
+        points.add(new Point(661, 46));
+        points.add(new Point(192, 388));
+        points.add(new Point(251, 448));
+
+        points.add(new Point(180, 556));
+        points.add(new Point(218, 627));
+    }
+
     @AfterEach
     public void after() {
         Main.showTriangulation(points);

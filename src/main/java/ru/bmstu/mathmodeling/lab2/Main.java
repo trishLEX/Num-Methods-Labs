@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Main {
-    private static final int N = 25;
+    private static final int N = 50;
 
     public static final int WINDOW_SIZE = 720;
     public static final Environment ENVIRONMENT = Environment.PRODUCTION;
@@ -47,6 +47,8 @@ public class Main {
             }
         }
 
+        points.sort(Comparator.comparingLong(Point::getZCode));
+
         showTriangulation(points);
     }
 
@@ -55,8 +57,6 @@ public class Main {
 
         TriangleDrawer drawer = new TriangleDrawer(WINDOW_SIZE, WINDOW_SIZE, triangulation, points);
         drawer.draw();
-
-        //triangulation.triangulate();
 
         System.out.println(triangulation.getCircles());
     }

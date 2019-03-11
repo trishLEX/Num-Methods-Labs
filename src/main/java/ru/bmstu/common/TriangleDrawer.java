@@ -2,6 +2,7 @@ package ru.bmstu.common;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import ru.bmstu.mathmodeling.lab2.Circle;
 import ru.bmstu.mathmodeling.lab2.Point;
 import ru.bmstu.mathmodeling.lab2.Triangle;
@@ -47,6 +48,15 @@ public class TriangleDrawer extends Drawer {
                 synchronized (triangulation) {
                     triangulation.notify();
                 }
+            }
+        })));
+
+        glfwSetMouseButtonCallback(window, GLFWMouseButtonCallback.create(((window, button, action, mods) -> {
+            if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+                double[] x = new double[1];
+                double[] y = new double[1];
+                glfwGetCursorPos(window, x, y);
+                System.out.println("points.add(new Point(" + (int) x[0] + ", " + (720 - (int) y[0]) + "));");
             }
         })));
     }
