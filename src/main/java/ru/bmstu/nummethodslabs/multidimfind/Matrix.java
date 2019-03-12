@@ -135,4 +135,9 @@ public class Matrix extends Array2DRowRealMatrix {
                     minor[i < row ? i : i - 1][j < column ? j : j - 1] = matrix[i][j];
         return minor;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

@@ -5,7 +5,7 @@ import ru.bmstu.nummethodslabs.MinFind;
 import java.util.function.Function;
 
 public class MultiDimMinFind {
-    private static final int MAX_ITER = 10000;
+    private static final int MAX_ITER = 100;
 
     private static double rosenbrock(Vector vector){
         double[] x = vector.getData();
@@ -22,12 +22,10 @@ public class MultiDimMinFind {
 
     private static Vector gradient(Vector vector) {
         double[] x = vector.getData();
-        return new Vector(new double[] {
-                4 * (30 * Math.pow(x[0], 3) - 30 * x[0] * x[1] + x[0] - 1),
+        return new Vector(4 * (30 * Math.pow(x[0], 3) - 30 * x[0] * x[1] + x[0] - 1),
                 -4 * (15 * x[0] * x[0] - 30 * Math.pow(x[1], 3) + 2 * x[1] * (15 * x[2] - 8) + 1),
                 -4 * (15 * x[1] * x[1] - 30 * Math.pow(x[2], 3) + 2 * x[2] * (15 * x[3] - 8) + 1),
-                -60 * (x[2] * x[2] - x[3])
-        });
+                -60 * (x[2] * x[2] - x[3]));
     }
 
     private static Function<Double, Double> minimizingFunction(Vector point, Vector gradValue) {
@@ -35,7 +33,7 @@ public class MultiDimMinFind {
     }
 
     private static double findMin(double start, Function<Double, Double> function) {
-        double step = 0.1;
+        double step = 0.5;
         double[] segment = MinFind.svenn(start, step, function);
         return MinFind.golden(segment[0], segment[1], 0, function);
     }
@@ -51,7 +49,7 @@ public class MultiDimMinFind {
             double gradNorm = gradValue.norm();
 
             if (gradNorm < grad || iters > maxIter) {
-                System.out.println("ITERS: " + iters);
+                System.out.println("POLAK: " + "ITERS: " + iters);
                 return x0;
             }
 
@@ -61,7 +59,7 @@ public class MultiDimMinFind {
             xk = x0.sub(gradValue.mul(gamma));
             if (xk.sub(x0).norm() < step && Math.abs(rosenbrock(xk) - rosenbrock(x0)) < step) {
                 if (prevAcc) {
-                    System.out.println("ITERS: " + iters);
+                    System.out.println("POLAK: " + "ITERS: " + iters);
                     return x0;
                 } else {
                     prevAcc = true;
@@ -74,93 +72,88 @@ public class MultiDimMinFind {
     }
 
     private static Vector flatcherRivz(Vector x0, double step, double grad, int maxIter) {
-        Vector xk = x0.copy();
-        Vector xkNew = x0.copy();
-        Vector xkOld = x0.copy();
+        Vector xNew = x0.copy();
+        Vector xOld = x0.copy();
         int iters = 0;
-        Vector d = gradient(xk).mul(-1);
+        Vector d = gradient(xNew).mul(-1);
+        Vector gradValueNew = gradient(xOld);
+        Vector gradValueOld = gradValueNew;
 
         while (true) {
-            Vector gradValue = gradient(xk);
-            if (gradValue.norm() < grad || iters > maxIter) {
-                System.out.println("ITERS: " + iters);
-                return xk;
+            gradValueNew = gradient(xOld);
+            if (gradValueNew.norm() < grad || iters > maxIter) {
+                System.out.println("ITERS1: " + iters);
+                return xOld;
             }
 
-            double beta = gradient(xkNew).norm() / gradient(xkOld).norm();
+            double beta = Matrix.dot(gradValueNew, gradValueNew.sub(gradValueOld)) / Math.pow(gradValueOld.norm(), 2);
 
-            Vector dNew = gradient(xkNew).mul(-1).add(d.mul(beta));
+            d = gradient(xNew).mul(-1).add(d.mul(beta));
 
-            Function<Double, Double> minimizingFunction = minimizingFunction(xk, dNew.mul(-1));
+            Function<Double, Double> minimizingFunction = minimizingFunction(xOld, d.mul(-1));
 
             double alpha = findMin(0.0, minimizingFunction);
 
-            xkNew = xk.add(dNew.mul(alpha));
+            xNew = xOld.add(d.mul(alpha));
 
-            if (xkNew.sub(xk).norm() < step && Double.compare(Math.abs(rosenbrock(xkNew) - rosenbrock(xk)), 0) != 0) {
-                System.out.println("ITERS: " + iters);
-                return xkNew;
+            double norm = xNew.sub(xOld).norm();
+            if ((norm < step) && (Math.abs(rosenbrock(xNew) - rosenbrock(xOld)) < step)) {
+                System.out.println("FLATCHER: " + "ITERS2: " + iters);
+                return xNew;
             } else {
-                xkOld = xk;
-                xk = xkNew;
-                d = dNew;
-
+                xOld = xNew;
+                gradValueOld = gradValueNew;
                 iters++;
             }
         }
     }
 
-    private static Matrix computeMatrixDg(Matrix G, Vector xOld, Vector xNew) {
-        Vector dg = gradient(xNew).sub(gradient(xOld));
-        Vector dx = xOld.sub(xOld);
-
-        Matrix numerator = dx.mul(dx);
-        double denumerator = Matrix.dot(dx, dx);
-        if (Double.compare(denumerator, 0) == 0) {
-            System.out.println("A " + numerator);
-            denumerator = 1;
-        }
-        Matrix first = numerator.div(denumerator);
-
-
-        numerator = G.mul(dg).mul(dg).mul(G);
-        denumerator = Matrix.dot(G.mul(dg), dg);
-        if (Double.compare(denumerator, 0) == 0) {
-            System.out.println("A " + numerator);
-            denumerator = 1;
-        }
-        Matrix second = numerator.div(denumerator);
-
-        return first.sub(second);
-    }
-
-    //TODO не работает
     private static Vector davidonFlatcherPowell(Vector x0, double step, double grad, int maxIter) {
         Vector xOld = x0.copy();
         Vector xNew = x0.copy();
         int iters = 0;
-        Matrix G = Matrix.identity(4);
+        Matrix GNew = Matrix.identity(4);
+        Matrix GOld = Matrix.identity(4);
 
         while (true) {
             Vector gradValue = gradient(xOld);
 
             if (gradValue.norm() < grad || iters > maxIter) {
-                System.out.println("ITERS: " + iters);
-                return xNew;
+                System.out.println("ITERS1: " + iters);
+                return xOld;
             }
 
-            Function<Double, Double> minimizingFunction = minimizingFunction(xNew, G.mul(gradValue));
+            if (iters > 0) {
+                Vector dg = gradient(xNew).sub(gradValue);
+                Vector dx = xNew.sub(xOld);
+
+                Matrix numerator = dx.mul(dx);
+                double denumerator = Matrix.dot(dx, dg);
+                if (Double.compare(denumerator, 0.0) == 0) {
+                    System.out.println("A");
+                }
+                Matrix first = numerator.div(denumerator);
+
+                Matrix numerator1 = GOld.mul(dg.mul(dg)).mul(GOld);
+                double denumerator1 = Matrix.dot(GOld.mul(dg), dg);
+                Matrix second = numerator1.div(denumerator1);
+
+                Matrix dG = first.sub(second);
+                GOld = GNew;
+                GNew = GOld.add(dG);
+            }
+
+            Function<Double, Double> minimizingFunction = minimizingFunction(xNew, GNew.mul(gradValue));
 
             double alpha = findMin(0.0, minimizingFunction);
+            System.out.println(alpha);
 
             xOld = xNew;
-            xNew = xOld.sub(G.mul(gradValue).mul(-alpha));
-
-            Matrix dG = computeMatrixDg(G, xOld, xNew);
-            G = G.add(dG);
+            xNew = xOld.sub(GNew.mul(gradValue).mul(alpha));
 
             if (xNew.sub(xOld).norm() < step && Math.abs(rosenbrock(xNew) - rosenbrock(xOld)) < step) {
-                System.out.println("ITERS: " + iters);
+                System.out.println(xNew.sub(xOld).norm() + " " + Math.abs(rosenbrock(xNew) - rosenbrock(xOld)));
+                System.out.println("ITERS2: " + iters);
                 return xNew;
             }
 
@@ -220,16 +213,16 @@ public class MultiDimMinFind {
     public static void main(String[] args) {
         Vector ideal = new Vector(1, 1, 1, 1);
 
-        Vector polakRibier = polakRibier(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
-        System.out.println(polakRibier + " " + Math.abs(rosenbrock(polakRibier) - rosenbrock(ideal)));
-
+//        Vector polakRibier = polakRibier(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
+//        System.out.println("POLAK: " + polakRibier + " " + Math.abs(rosenbrock(polakRibier) - rosenbrock(ideal)) + "\n");
+//
         Vector flatcherRivz = flatcherRivz(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
-        System.out.println(flatcherRivz + " " + Math.abs(rosenbrock(flatcherRivz) - rosenbrock(ideal)));
+        System.out.println("FLATCHER: " + flatcherRivz + " " + Math.abs(rosenbrock(flatcherRivz) - rosenbrock(ideal)) + "\n");
 
-        Vector davidonFlatcherPowell = davidonFlatcherPowell(new Vector(0, 0, 0, 0), 0.00001, 0.000001, MAX_ITER);
-        System.out.println(davidonFlatcherPowell + " " + Math.abs(rosenbrock(davidonFlatcherPowell) - rosenbrock(ideal)));
+        Vector davidonFlatcherPowell = davidonFlatcherPowell(new Vector(0.0, 0.0, 0.0, 0.0), 0.001, 0.001, MAX_ITER);
+        System.out.println("DAVIDON: " + davidonFlatcherPowell + " " + Math.abs(rosenbrock(davidonFlatcherPowell) - rosenbrock(ideal)) + "\n");
 
-        Vector levenbergMarkvardt = levenbergMarkvardt(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
-        System.out.println(levenbergMarkvardt + " " + Math.abs(rosenbrock(levenbergMarkvardt) - rosenbrock(ideal)));
+//        Vector levenbergMarkvardt = levenbergMarkvardt(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
+//        System.out.println(levenbergMarkvardt + " " + Math.abs(rosenbrock(levenbergMarkvardt) - rosenbrock(ideal)));
     }
 }
