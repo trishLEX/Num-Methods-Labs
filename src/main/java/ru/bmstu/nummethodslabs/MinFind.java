@@ -8,6 +8,8 @@ import java.util.function.Function;
 import com.google.common.collect.Lists;
 import ru.bmstu.nummethodslabs.hookejeeves.Hooke;
 
+import static ru.bmstu.nummethodslabs.multidimfind.MultiDimMinFind.iters;
+
 public class MinFind {
     private static final double E = 0.001;
     private static final double X_0 = -13;
@@ -77,9 +79,10 @@ public class MinFind {
 
     public static double bisection(double a, double b, int n, Function<Double, Double> f) {
         double x = (a + b) / 2;
-        if (Math.abs(a - b) < E)
+        if (Math.abs(a - b) < E) {
+            iters += n;
             return x;
-        else {
+        } else {
             if (f.apply(x) < f.apply(x + E))
                 return bisection(a, x, ++n, f);
             else
@@ -89,9 +92,10 @@ public class MinFind {
 
     public static double golden(double a, double b, int n, Function<Double, Double> f) {
         double x = (a + b) / 2;
-        if (Math.abs(a - b) < E)
+        if (Math.abs(a - b) < E) {
+            iters += n;
             return x;
-        else {
+        } else {
             double alpha = a + 2 / (3 + Math.sqrt(5)) * (b - a);
             double beta  = a + 2 / (1 + Math.sqrt(5)) * (b - a);
             if (f.apply(alpha) > f.apply(beta))
@@ -138,7 +142,7 @@ public class MinFind {
             a = left;
         }
 
-        System.out.println("FIBONACCI: " + k);
+        iters += k;
         return (a + b) / 2.0;
     }
 

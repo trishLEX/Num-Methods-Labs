@@ -37,7 +37,6 @@ public class Triangulation {
     }
 
     public void triangulate() {
-//        points.sort(Comparator.comparingLong(Point::getZCode));
         System.out.println(points);
 
         addTriangleWithCircle(points.subList(0, 3));

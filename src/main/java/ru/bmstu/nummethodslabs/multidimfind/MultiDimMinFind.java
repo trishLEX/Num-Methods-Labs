@@ -7,7 +7,8 @@ import java.util.function.Function;
 
 public class MultiDimMinFind {
     private static final int MAX_ITER = 1000;
-    private static final int METHOD = 0;
+    private static int METHOD = 0;
+    public static int iters;
 
     private static double rosenbrock(Vector vector){
         double[] x = vector.getData();
@@ -52,8 +53,8 @@ public class MultiDimMinFind {
 
     private static Vector polakRibier(Vector x0, double step, double grad, int maxIter) {
         Vector xk = x0.copy();
+        iters = 0;
 
-        int iters = 0;
         boolean prevAcc = false;
 
         while (true) {
@@ -61,7 +62,7 @@ public class MultiDimMinFind {
             double gradNorm = gradValue.norm();
 
             if (gradNorm < grad || iters > maxIter) {
-                System.out.println("POLAK: " + "ITERS: " + iters);
+                System.out.println("ITERS: " + iters);
                 return x0;
             }
 
@@ -86,7 +87,7 @@ public class MultiDimMinFind {
     private static Vector flatcherRivz(Vector x0, double step, double grad, int maxIter) {
         Vector xNew = x0.copy();
         Vector xOld = x0.copy();
-        int iters = 0;
+        iters = 0;
         Vector d = gradient(xNew).mul(-1);
         Vector gradValueNew = gradient(xOld);
         Vector gradValueOld = gradValueNew;
@@ -123,7 +124,7 @@ public class MultiDimMinFind {
     private static Vector davidonFlatcherPowell(Vector x0, double step, double grad, int maxIter) {
         Vector xOld = x0.copy();
         Vector xNew = x0.copy();
-        int iters = 0;
+        iters = 0;
         Matrix GNew = Matrix.identity(4);
         Matrix GOld = Matrix.identity(4);
 
@@ -186,7 +187,7 @@ public class MultiDimMinFind {
     }
 
     private static Vector levenbergMarkvardt(Vector x0, double step, double grad, int maxIter) {
-        int iters = 0;
+        iters = 0;
         Vector xk = x0.copy();
         double nuk = Math.pow(10, 4);
 
@@ -217,7 +218,7 @@ public class MultiDimMinFind {
         }
     }
 
-    public static void main(String[] args) {
+    private static void calc() {
         Vector ideal = new Vector(1, 1, 1, 1);
 
         Vector polakRibier = polakRibier(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
@@ -231,5 +232,21 @@ public class MultiDimMinFind {
 
         Vector levenbergMarkvardt = levenbergMarkvardt(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
         System.out.println("LEVENBERG: " + levenbergMarkvardt + " " + Math.abs(rosenbrock(levenbergMarkvardt) - rosenbrock(ideal)));
+
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        System.out.println("BISECTION");
+        METHOD = 0;
+        calc();
+
+        System.out.println("GOLDEN");
+        METHOD = 1;
+        calc();
+
+        System.out.println("FIBONACCI");
+        METHOD = 2;
+        calc();
     }
 }
