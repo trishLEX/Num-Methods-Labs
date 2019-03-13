@@ -31,7 +31,7 @@ public abstract class Drawer {
         this.window = GLFW.glfwCreateWindow(width, height, name, 0, 0);
 
         if (window == 0) {
-            throw new RuntimeException("Failed to create window");
+            throw new IllegalStateException("Failed to create window");
         }
 
         GLFW.glfwMakeContextCurrent(window);

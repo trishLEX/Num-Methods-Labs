@@ -24,17 +24,20 @@ public class NMSimplex {
         double[] ve = new double[n];
         double[] vc = new double[n];
         double[] vm = new double[n];
-        double fr;
-        double fe;
-        double fc;
-        double pn, qn;
+        double fr;      /* value of function at reflection point */
+        double fe;      /* value of function at expansion point */
+        double fc;      /* value of function at contraction point */
+        double pn, qn;   /* values used to create initial simplex */
         double fsum, favg, s, cent;
-        int vs;
-        int vh;
-        int vg;
+        int vs;         /* vertex with smallest value */
+        int vh;         /* vertex with next smallest value */
+        int vg;         /* vertex with largest value */
         int i, j, m, row = 0;
-        int k;
-        int itr;
+        int k;          /* track the number of function evaluations */
+        int itr;          /* track the number of iterations */
+
+        /* create the initial simplex */
+        /* assume one of the vertices is 0,0 */
 
         System.out.format("Starting from : %f\n", start[0]);
 
@@ -55,6 +58,7 @@ public class NMSimplex {
             }
         }
 
+        /* find the initial function values */
         for (j = 0; j <= n; j++) {
             f[j] = rosenbrock(v[j]);
         }
@@ -68,7 +72,9 @@ public class NMSimplex {
             }
         }
 
+        /* begin the main loop of the minimization */
         for (itr = 1; itr <= MAX_IT; itr++) {
+            /* find the index of the largest value */
             vg = 0;
             for (j = 0; j <= n; j++) {
                 if (f[j] > f[vg]) {
@@ -76,6 +82,7 @@ public class NMSimplex {
                 }
             }
 
+            /* find the index of the smallest value */
             vs = 0;
             for (j = 0; j <= n; j++) {
                 if (f[j] < f[vs]) {
@@ -83,6 +90,7 @@ public class NMSimplex {
                 }
             }
 
+            /* find the index of the second largest value */
             vh = vs;
             for (j = 0; j <= n; j++) {
                 if (f[j] > f[vh] && f[j] < f[vg]) {
@@ -100,6 +108,7 @@ public class NMSimplex {
                 vm[j] = cent / n;
             }
 
+            /* reflect vg to new vertex vr */
             for (j = 0; j <= n - 1; j++) {
                 vr[j] = vm[j] + ALPHA * (vm[j] - v[vg][j]);
             }
@@ -114,6 +123,7 @@ public class NMSimplex {
                 f[vg] = fr;
             }
 
+            /* investigate a step further in this direction */
             if (fr < f[vs]) {
                 for (j = 0; j <= n - 1; j++) {
                     ve[j] = vm[j] + GAMMA * (vr[j] - vm[j]);

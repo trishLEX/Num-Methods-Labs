@@ -98,16 +98,6 @@ public class Triangulation {
                         Triangle triangle1 = addTriangle(point, opposite, Iterables.get(edge, 0));
                         Triangle triangle2 = addTriangle(point, opposite, Iterables.get(edge, 1));
 
-//                        checkInnerTriangles(point, triangle1);
-//                        checkInnerTriangles(point, triangle2);
-
-//                        for (Triangle newTr : Sets.newHashSet(point.getTriangles())) {
-//                            Triangle neighbour = newTr.getNeighbour(newTr.getOppositeEdge(point));
-//                            if (neighbour != null) {
-//                                makeConvex(point, neighbour, newTr);
-//                            }
-//                        }
-
                         break;
                 }
             }

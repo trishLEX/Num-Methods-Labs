@@ -17,6 +17,8 @@ public class Hooke {
     public  static final int    INDEX_ONE       = 1;
     private static final double ZERO_POINT_FIVE = 0.5;
 
+    public static int iters;
+
     /**
      * 0 - bisection
      * 1 - golden section
@@ -59,7 +61,6 @@ public class Hooke {
 
         int i;
         int iAdj;
-        int iters;
         int j;
         int keep;
 
@@ -134,9 +135,7 @@ public class Hooke {
                 for (i = 0; i < nVars; i++) {
                     keep = 1;
 
-                    if (Math.abs(newX[i] - xBefore[i])
-                            > (ZERO_POINT_FIVE * Math.abs(delta[i]))) {
-
+                    if (Math.abs(newX[i] - xBefore[i]) > (ZERO_POINT_FIVE * Math.abs(delta[i]))) {
                         break;
                     } else {
                         keep = 0;
