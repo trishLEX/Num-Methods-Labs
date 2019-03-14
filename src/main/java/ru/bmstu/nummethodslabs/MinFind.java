@@ -1,12 +1,12 @@
 package ru.bmstu.nummethodslabs;
 
+import com.google.common.collect.Lists;
+import ru.bmstu.nummethodslabs.hookejeeves.Hooke;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-
-import com.google.common.collect.Lists;
-import ru.bmstu.nummethodslabs.hookejeeves.Hooke;
 
 import static ru.bmstu.nummethodslabs.multidimfind.MultiDimMinFind.iters;
 
@@ -81,6 +81,7 @@ public class MinFind {
         double x = (a + b) / 2;
         if (Math.abs(a - b) < E) {
             iters += n;
+            Hooke.iters += n;
             return x;
         } else {
             if (f.apply(x) < f.apply(x + E))
@@ -94,6 +95,7 @@ public class MinFind {
         double x = (a + b) / 2;
         if (Math.abs(a - b) < E) {
             iters += n;
+            Hooke.iters += n;
             return x;
         } else {
             double alpha = a + 2 / (3 + Math.sqrt(5)) * (b - a);
@@ -143,6 +145,7 @@ public class MinFind {
         }
 
         iters += k;
+        Hooke.iters += k;
         return (a + b) / 2.0;
     }
 

@@ -2,7 +2,6 @@ package ru.bmstu.nummethodslabs.multidimfind;
 
 import ru.bmstu.nummethodslabs.MinFind;
 
-import java.util.Arrays;
 import java.util.function.Function;
 
 public class MultiDimMinFind {
@@ -222,16 +221,16 @@ public class MultiDimMinFind {
         Vector ideal = new Vector(1, 1, 1, 1);
 
         Vector polakRibier = polakRibier(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
-        System.out.println("POLAK: " + polakRibier + " " + Math.abs(rosenbrock(polakRibier) - rosenbrock(ideal)) + "\n");
+        System.out.println("POLAK: " + rosenbrock(polakRibier) + " " + Math.abs(rosenbrock(polakRibier) - rosenbrock(ideal)) + "\n");
 
         Vector flatcherRivz = flatcherRivz(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
-        System.out.println("FLATCHER: " + flatcherRivz + " " + Math.abs(rosenbrock(flatcherRivz) - rosenbrock(ideal)) + "\n");
+        System.out.println("FLATCHER: " + rosenbrock(flatcherRivz) + " " + Math.abs(rosenbrock(flatcherRivz) - rosenbrock(ideal)) + "\n");
 
         Vector davidonFlatcherPowell = davidonFlatcherPowell(new Vector(0.0, 0.0, 0.0, 0.0), 0.001, 0.001, MAX_ITER);
-        System.out.println("DAVIDON: " + davidonFlatcherPowell + " " + Math.abs(rosenbrock(davidonFlatcherPowell) - rosenbrock(ideal)) + "\n");
+        System.out.println("DAVIDON: " + rosenbrock(davidonFlatcherPowell) + " " + Math.abs(rosenbrock(davidonFlatcherPowell) - rosenbrock(ideal)) + "\n");
 
         Vector levenbergMarkvardt = levenbergMarkvardt(new Vector(0, 0, 0, 0), 0.001, 0.001, MAX_ITER);
-        System.out.println("LEVENBERG: " + levenbergMarkvardt + " " + Math.abs(rosenbrock(levenbergMarkvardt) - rosenbrock(ideal)));
+        System.out.println("LEVENBERG: " + rosenbrock(levenbergMarkvardt) + " " + Math.abs(rosenbrock(levenbergMarkvardt) - rosenbrock(ideal)));
 
         System.out.println();
     }
