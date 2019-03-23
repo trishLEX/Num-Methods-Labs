@@ -69,6 +69,10 @@ public class Vector {
         return data;
     }
 
+    public int size() {
+        return data.length;
+    }
+
     @Override
     public String toString() {
         return Arrays.toString(data);

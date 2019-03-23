@@ -50,7 +50,7 @@ public class MultiDimMinFind {
         }
     }
 
-    private static Vector polakRibier(Vector x0, double step, double grad, int maxIter) {
+    public static Vector polakRibier(Vector x0, double step, double grad, int maxIter) {
         Vector xk = x0.copy();
         iters = 0;
 
@@ -83,7 +83,7 @@ public class MultiDimMinFind {
         }
     }
 
-    private static Vector flatcherRivz(Vector x0, double step, double grad, int maxIter) {
+    public static Vector flatcherRivz(Vector x0, double step, double grad, int maxIter) {
         Vector xNew = x0.copy();
         Vector xOld = x0.copy();
         iters = 0;
@@ -120,7 +120,7 @@ public class MultiDimMinFind {
         }
     }
 
-    private static Vector davidonFlatcherPowell(Vector x0, double step, double grad, int maxIter) {
+    public static Vector davidonFlatcherPowell(Vector x0, double step, double grad, int maxIter) {
         Vector xOld = x0.copy();
         Vector xNew = x0.copy();
         iters = 0;
@@ -185,7 +185,7 @@ public class MultiDimMinFind {
         return new Matrix(hessian);
     }
 
-    private static Vector levenbergMarkvardt(Vector x0, double step, double grad, int maxIter) {
+    public static Vector levenbergMarkvardt(Vector x0, double step, double grad, int maxIter) {
         iters = 0;
         Vector xk = x0.copy();
         double nuk = Math.pow(10, 4);

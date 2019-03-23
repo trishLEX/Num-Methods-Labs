@@ -97,6 +97,9 @@ public class Matrix extends Array2DRowRealMatrix {
 
         // adjugate and determinant
         double det = 1.0 / determinant(getDataRef());
+        if (Double.compare(determinant(getDataRef()), 0.0) == 0) {
+            det = 0;
+        }
         for (int i = 0; i < inverse.length; i++) {
             for (int j = 0; j <= i; j++) {
                 double temp = inverse[i][j];
@@ -134,6 +137,18 @@ public class Matrix extends Array2DRowRealMatrix {
                 if (j != column)
                     minor[i < row ? i : i - 1][j < column ? j : j - 1] = matrix[i][j];
         return minor;
+    }
+
+    public Matrix transpose(){
+        double[][] m = getDataRef();
+        double[][] temp = new double[m[0].length][m.length];
+        for (int i = 0; i < m.length; i++) {
+            for (int j = 0; j < m[0].length; j++) {
+                temp[j][i] = m[i][j];
+            }
+        }
+
+        return new Matrix(temp);
     }
 
     @Override

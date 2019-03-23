@@ -1,23 +1,14 @@
 package ru.bmstu.nummethodslabs.simplex;
 
+import java.util.function.Function;
+
 public class NMSimplex {
     private static final int MAX_IT = 1000;
     private static final double ALPHA = 1.0;
     private static final double BETA = 0.5;
     private static final double GAMMA = 2.0;
 
-    private double rosenbrock(double[] x){
-        double sum = 80;
-        double a = 30;
-        double b = 2;
-        for (int i = 0; i < 3; i++) {
-            sum += a * Math.pow(x[i] * x[i] - x[i+1], 2) + b * Math.pow(x[i] - 1, 2);
-        }
-
-        return sum;
-    }
-
-    public NMSimplex(double[] start, int n, double EPSILON, double scale) {
+    public static double[] NMSimplex(double[] start, int n, double EPSILON, double scale, Function<double[], Double> fn) {
         double[][] v = new double[n + 1][n];
         double[] f = new double[n + 1];
         double[] vr = new double[n];
@@ -39,8 +30,6 @@ public class NMSimplex {
         /* create the initial simplex */
         /* assume one of the vertices is 0,0 */
 
-        System.out.format("Starting from : %f\n", start[0]);
-
         pn = scale * (Math.sqrt(n + 1) - 1 + n) / (n * Math.sqrt(2));
         qn = scale * (Math.sqrt(n + 1) - 1) / (n * Math.sqrt(2));
 
@@ -60,17 +49,10 @@ public class NMSimplex {
 
         /* find the initial function values */
         for (j = 0; j <= n; j++) {
-            f[j] = rosenbrock(v[j]);
+            f[j] = fn.apply(v[j]);
         }
 
         k = n + 1;
-
-        System.out.println("Initial Values");
-        for (j = 0; j <= n; j++) {
-            for (i = 0; i < n; i++) {
-                System.out.format("%f %f\n", v[j][i], f[j]);
-            }
-        }
 
         /* begin the main loop of the minimization */
         for (itr = 1; itr <= MAX_IT; itr++) {
@@ -113,7 +95,7 @@ public class NMSimplex {
                 vr[j] = vm[j] + ALPHA * (vm[j] - v[vg][j]);
             }
 
-            fr = rosenbrock(vr);
+            fr = fn.apply(vr);
             k++;
 
             if (fr < f[vh] && fr >= f[vs]) {
@@ -129,7 +111,7 @@ public class NMSimplex {
                     ve[j] = vm[j] + GAMMA * (vr[j] - vm[j]);
                 }
 
-                fe = rosenbrock(ve);
+                fe = fn.apply(ve);
                 k++;
 
                 if (fe < fr) {
@@ -151,14 +133,14 @@ public class NMSimplex {
                         vc[j] = vm[j] + BETA * (vr[j] - vm[j]);
                     }
 
-                    fc = rosenbrock(vc);
+                    fc = fn.apply(vc);
                     k++;
                 } else {
                     for (j = 0; j <= n - 1; j++) {
                         vc[j] = vm[j] - BETA * (vm[j] - v[vg][j]);
                     }
 
-                    fc = rosenbrock(vc);
+                    fc = fn.apply(vc);
                     k++;
                 }
 
@@ -179,18 +161,11 @@ public class NMSimplex {
                         }
                     }
 
-                    f[vg] = rosenbrock(v[vg]);
+                    f[vg] = fn.apply(v[vg]);
                     k++;
 
-                    f[vh] = rosenbrock(v[vh]);
+                    f[vh] = fn.apply(v[vh]);
                     k++;
-                }
-            }
-
-            System.out.format("Iteration %d\n", itr);
-            for (j = 0; j <= n; j++) {
-                for (i = 0; i < n; i++) {
-                    System.out.format("%f %f\n", v[j][i], f[j]);
                 }
             }
 
@@ -214,16 +189,17 @@ public class NMSimplex {
             }
         }
 
-        System.out.format("The minimum was found at\n");
         for (j = 0; j < n; j++) {
-            System.out.format("%.2f\n", v[vs][j]);
             start[j] = v[vs][j];
         }
+
         k++;
-        System.out.format("%d Function Evaluations\n", k);
-        System.out.format("%d Iterations through program\n", itr);
-        System.out.println(rosenbrock(start));
-        System.out.println(rosenbrock(new double[]{1, 1, 1, 1}) - rosenbrock(start));
+//        System.out.format("%d Function Evaluations\n", k);
+//        System.out.format("%d Iterations through program\n", itr);
+//        System.out.println(fn.apply(start));
+//        System.out.println(fn.apply(new double[]{1, 1, 1, 1}) - fn.apply(start));
+
+        return start;
     }
 
 }
