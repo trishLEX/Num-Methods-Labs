@@ -54,9 +54,6 @@ public class CondMinFind {
         double[] x = vector.getData();
         return -x[2];
     }
-    
-    //solve a*(4*(30*x^3-30*x*y+x-1))+2*b*x-c=0, a*(-4*(15*x^2-30*y^3+2*y(15*z-8)+1)+2*b*y-d=0, a*(-4*(15*y^2-30*z^3+2*z(15*w-8)+1)-3*a-e=0, a*(-60*(z^2-w))+2*b*w-f=0, x=-15, y=-15, z=-15, w=-15, a=0
-    //solve a*(4*(30*x^3-30*x*y+x-1))+2*b*x-c=0, a*(-4*(15*x^2-30*y^3+2*y(15*z-8)+1)+2*b*y-d=0, a*(-4*(15*y^2-30*z^3+2*z(15*w-8)+1)-3*a-e=0, a*(-60*(z^2-w))+2*b*w-f=0, x=-15, y=-15, z=-15, w=-15, a=0
 
     private static double g5(Vector vector) {
         double[] x = vector.getData();
@@ -107,20 +104,22 @@ public class CondMinFind {
     private static Vector penaltyFunctionsMethod(Vector x, double r, double c) {
         int iter = 0;
         Vector x0 = x.copy();
+
+        BiFunction<Vector, Double, Double> penaltyFunction = (vector, pen) -> G_LIST.stream()
+                .map(g -> g.apply(vector))
+                .map(CondMinFind::cutFunction)
+                .map(val -> val * val)
+                .reduce((x1, x2) -> x1 + x2)
+                .map(res ->  res * pen / 2)
+                .orElseThrow(IllegalStateException::new);
+
         while (true) {
-            double rCoef = r * 0.5;
+            double finalR = r;
 
-            Function<Vector, Double> penaltyFunction = vector -> G_LIST.stream()
-                    .map(g -> g.apply(vector))
-                    .map(CondMinFind::cutFunction)
-                    .map(val -> val * val)
-                    .reduce((x1, x2) -> x1 + x2)
-                    .orElseThrow(IllegalStateException::new);
-
-            Function<double[], Double> function = vector -> rosenbrock(new Vector(vector)) + rCoef * penaltyFunction.apply(new Vector(vector));
+            Function<double[], Double> function = vector -> rosenbrock(new Vector(vector)) + penaltyFunction.apply(new Vector(vector), finalR);
 
             Vector xNew = new Vector(NMSimplex.NMSimplex(x0.getData(), 4, E, 0.01, function));
-            double penaltyValue = penaltyFunction.apply(xNew);
+            double penaltyValue = penaltyFunction.apply(xNew, finalR);
 
             iter++;
 
@@ -137,7 +136,7 @@ public class CondMinFind {
     private static Vector barrierMethod(Vector x, double r, double c) {
         int iter = 0;
         double curPenalty = r;
-        Vector xCur = x;
+        Vector xCur = x.copy();
 
         BiFunction<Vector, Double, Double> penaltyFunction = (vector, pen) -> G_LIST.stream()
                 .map(g -> g.apply(vector))
@@ -164,18 +163,51 @@ public class CondMinFind {
         }
     }
 
+    private static Vector mixedMethod(Vector x, double r, double c) {
+        int iter = 0;
+        double curPenalty = r;
+        Vector xCur = x.copy();
+
+        BiFunction<Vector, Double, Double> penaltyFunction1 = (vector, pen) -> G_LIST.stream()
+                .map(g -> g.apply(vector))
+                .map(CondMinFind::cutFunction)
+                .map(val -> val * val)
+                .reduce((x1, x2) -> x1 + x2)
+                .map(res -> res * pen / 2)
+                .orElseThrow(IllegalStateException::new);
+
+        BiFunction<Vector, Double, Double> penaltyFunction2 = (vector, pen) -> - G_LIST.stream()
+                .map(g -> g.apply(vector))
+                .map(val -> pen / val)
+                .reduce((x1, x2) -> x1 + x2)
+                .orElseThrow(IllegalStateException::new);
+
+        while (true) {
+            double finalCurPenalty = curPenalty;
+            Function<double[], Double> function = vector -> rosenbrock(new Vector(vector))
+                    + penaltyFunction1.apply(new Vector(vector), finalCurPenalty)
+                    + penaltyFunction2.apply(new Vector(vector), finalCurPenalty);
+
+            Vector xNew = new Vector(NMSimplex.NMSimplex(xCur.getData(), 4, E, 0.001, function));
+            double penaltyValue = penaltyFunction1.apply(xNew, curPenalty) + penaltyFunction2.apply(xNew, curPenalty);
+
+            iter++;
+
+            if (Math.abs(penaltyValue) < E) {
+                System.out.println("MIXED METHOD ITERS: " + iter);
+                return xNew;
+            } else {
+                curPenalty /= c;
+                xCur = xNew;
+            }
+        }
+    }
+
     private static Vector modifiedLagrangeMethod(Vector x, double r, double c, List<Double> mu) {
         int iter = 0;
         Vector x0 = x.copy();
 
         while (true) {
-//            double second = IntStream
-//                    .range(0, lambda.size())
-//                    .boxed()
-//                    .map(i -> lambda.get(i) * G_LIST.get(i).apply(x0))
-//                    .reduce((x1, x2) -> x1 + x2)
-//                    .orElseThrow(IllegalStateException::new);
-
             List<Double> finalMu = mu;
             double finalR = r;
 
@@ -198,12 +230,6 @@ public class CondMinFind {
                 return xNew;
             } else {
                 x0 = xNew;
-//                List<Double> finalLambda = lambda;
-//                lambda = IntStream
-//                        .range(0, lambda.size())
-//                        .boxed()
-//                        .map(i -> finalLambda.get(i) + finalR * G_LIST.get(i).apply(xNew))
-//                        .collect(Collectors.toList());
 
                 mu = IntStream
                         .range(0, mu.size())
@@ -284,16 +310,22 @@ public class CondMinFind {
     }
 
     public static void main(String[] args) {
-        Vector penaltyFunction = penaltyFunctionsMethod(new Vector(-15, -15, -15, -15), 1, 4);
-        System.out.println("PENALTY METHOD RES: " + penaltyFunction + " ERROR: " + Math.abs(rosenbrock(new Vector(1, 1, 1, 1)) - rosenbrock(penaltyFunction)));
+        Vector start = new Vector(0, 0, 0, 0);
+        Vector ideal = new Vector(1, 1, 1, 1);
 
-        Vector barrierMethod = barrierMethod(new Vector(-15, -15, -15, -15), 1, 10);
-        System.out.println("BARRIER METHOD RES: " + barrierMethod + " ERROR: " + Math.abs(rosenbrock(new Vector(1, 1, 1, 1)) - rosenbrock(barrierMethod)));
+        Vector penaltyFunction = penaltyFunctionsMethod(start, 1, 4);
+        System.out.println("PENALTY METHOD RES: " + penaltyFunction + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(penaltyFunction)));
 
-        Vector lagrange = modifiedLagrangeMethod(new Vector(-15, -15, -15, -15), 1, 4, List.of(-0.33, 10.0, 10.0, 1.0, 10.0));
-        System.out.println("MODIFIED LAGRANGE METHOD RES: " + lagrange + " ERROR: " + Math.abs(rosenbrock(new Vector(1, 1, 1, 1)) - rosenbrock(lagrange)));
+        Vector barrierMethod = barrierMethod(start, 1, 10);
+        System.out.println("BARRIER METHOD RES: " + barrierMethod + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(barrierMethod)));
 
-        Vector gradients = gradientsProjection(new Vector(0, 0, 0, 0));
-        System.out.println("GRADIENT PROJECTIONS METHOD RES: " + gradients + " ERROR: " + Math.abs(rosenbrock(new Vector(1, 1, 1, 1)) - rosenbrock(gradients)));
+        Vector mixedMethod = mixedMethod(start, 1, 10);
+        System.out.println("MIXED METHOD RES: " + mixedMethod + " ERROR " + Math.abs(rosenbrock(ideal) - rosenbrock(mixedMethod)));
+
+        Vector lagrange = modifiedLagrangeMethod(start, 1, 4, List.of(-0.33, 10.0, 10.0, 1.0, 10.0));
+        System.out.println("MODIFIED LAGRANGE METHOD RES: " + lagrange + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(lagrange)));
+
+        Vector gradients = gradientsProjection(start);
+        System.out.println("GRADIENT METHOD RES: " + gradients + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(gradients)));
     }
 }
