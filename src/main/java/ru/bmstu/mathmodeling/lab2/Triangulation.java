@@ -5,10 +5,7 @@ import com.google.common.collect.Sets;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ru.bmstu.common.Drawer.*;
 import static ru.bmstu.mathmodeling.lab2.Main.MAKE_STEPS;
@@ -38,6 +35,7 @@ public class Triangulation {
 
     public void triangulate() {
         System.out.println(points);
+        points.sort(Comparator.comparingLong(Point::getZCode));
 
         addTriangleWithCircle(points.subList(0, 3));
 
@@ -100,6 +98,24 @@ public class Triangulation {
                         break;
                 }
             }
+        }
+    }
+
+    public void addPoints() {
+        List<Triangle> addTr = new ArrayList<>();
+        for (Triangle triangle : triangles) {
+            removeTriangle(triangle);
+            Point mid = triangle.getMidPoint();
+
+            points.add(mid);
+
+            addTr.add(new Triangle(mid, triangle.getFirst(), triangle.getSecond()));
+            addTr.add(new Triangle(mid, triangle.getFirst(), triangle.getThird()));
+            addTr.add(new Triangle(mid, triangle.getSecond(), triangle.getThird()));
+        }
+
+        for (Triangle triangle : addTr) {
+            addTriangle(triangle);
         }
     }
 
@@ -197,6 +213,14 @@ public class Triangulation {
         circles.add(circle);
 
         return triangle;
+    }
+
+    private void addTriangle(Triangle triangle) {
+        Circle circle = Circle.getCircumcircle(triangle).withColor(GRAY);
+        triangle.setCircumCircle(circle);
+
+        triangles.add(triangle);
+        circles.add(circle);
     }
 
     private void flip(Triangle triangle1, Triangle triangle2) {

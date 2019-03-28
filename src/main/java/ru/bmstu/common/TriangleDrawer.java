@@ -26,6 +26,10 @@ public class TriangleDrawer extends Drawer {
     private boolean toDrawCircles;
     private boolean toDrawRedCircles;
     private boolean toDrawPoints;
+    private boolean toDrawLines;
+
+    private double rotateX = 0.0;
+    private double rotateY = 0.0;
 
     public TriangleDrawer(int width, int height, Triangulation triangulation, List<Point> points) {
         super(width, height, "triangles");
@@ -44,10 +48,22 @@ public class TriangleDrawer extends Drawer {
                 toDrawRedCircles = !toDrawRedCircles;
             } else if (key == GLFW_KEY_P && action == GLFW_PRESS) {
                 toDrawPoints = !toDrawPoints;
+            } else if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+                toDrawLines = !toDrawLines;
             } else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
                 synchronized (triangulation) {
                     triangulation.notify();
                 }
+            } else if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+                rotateX += 10.0;
+            } else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+                rotateX -= 10.0;
+            } else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+                rotateY -= 10.0;
+            } else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+                rotateY += 10.0;
+            } else if (key == GLFW_KEY_KP_ADD && action == GLFW_PRESS) {
+                triangulation.addPoints();
             }
         })));
 
@@ -69,8 +85,6 @@ public class TriangleDrawer extends Drawer {
         while (!GLFW.glfwWindowShouldClose(this.window)) {
             background();
 
-            drawTriangles();
-
             if (toDrawPoints) {
                 drawPoints();
             }
@@ -78,6 +92,8 @@ public class TriangleDrawer extends Drawer {
             if (toDrawCircles) {
                 drawCircles();
             }
+
+            drawTriangles();
 
             GLFW.glfwSwapBuffers(this.window);
             GLFW.glfwPollEvents();
@@ -88,10 +104,33 @@ public class TriangleDrawer extends Drawer {
 
     private void drawTriangles() {
         //glColor3dv(BLACK);
+
+        if (toDrawLines) {
+            glLineWidth(1);
+            for (Triangle triangle : triangulation.getTriangles()) {
+                glColor3dv(BLACK);
+                glBegin(GL_LINE_LOOP);
+                glVertex2d((triangle.getFirst().getX() - SIZE) / SIZE, (triangle.getFirst().getY() - SIZE) / SIZE);
+                glVertex2d((triangle.getSecond().getX() - SIZE) / SIZE, (triangle.getSecond().getY() - SIZE) / SIZE);
+                glVertex2d((triangle.getThird().getX() - SIZE) / SIZE, (triangle.getThird().getY() - SIZE) / SIZE);
+                glEnd();
+            }
+        }
+
         glLineWidth(2);
         for (Triangle triangle : triangulation.getTriangles()) {
-            glBegin(GL_LINE_LOOP);
-            glColor3dv(triangle.getColor());
+            glBegin(GL_POLYGON);
+            double[] color = {1, 1, 0};
+            double avg = (triangle.getFirst().getZ() / 14000 + triangle.getSecond().getZ() / 14000 + triangle.getThird().getZ() / 14000) / 3;
+            color[0] *= avg;
+            color[1] = 1 - color[1] * avg;
+//            double avg = (triangle.getFirst().getZ() / 14000 + triangle.getSecond().getZ() / 14000 + triangle.getThird().getZ() / 14000) / 3;
+//            if (avg < 0.5) {
+//                color = new double[]{avg, 1, 0};
+//            } else {
+//                color = new double[]{1, 1 - avg, 0};
+//            }
+            glColor3dv(color);
             glVertex2d((triangle.getFirst().getX() - SIZE) / SIZE, (triangle.getFirst().getY() - SIZE) / SIZE);
             glVertex2d((triangle.getSecond().getX() - SIZE) / SIZE, (triangle.getSecond().getY() - SIZE) / SIZE);
             glVertex2d((triangle.getThird().getX() - SIZE) / SIZE, (triangle.getThird().getY() - SIZE) / SIZE);

@@ -1,12 +1,15 @@
 package ru.bmstu.mathmodeling.lab2;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 import static ru.bmstu.mathmodeling.lab2.Main.ENVIRONMENT;
 
 public class Point {
-    private int x;
-    private int y;
+    private double x;
+    private double y;
+    private double z;
     private long zCode;
     private Set<Triangle> triangles;
 
@@ -24,6 +27,14 @@ public class Point {
         for (int i = 0; i < bytes.length; i++) {
             zCode += (1 << i) * (bytes[i] * 0xff);
         }
+
+        triangles = new HashSet<>();
+    }
+
+    public Point(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
 
         triangles = new HashSet<>();
     }
@@ -60,12 +71,21 @@ public class Point {
         triangles.remove(triangle);
     }
 
+    public Point withZ(int z) {
+        this.z = z;
+        return this;
+    }
+
+    public double getZ() {
+        return z;
+    }
+
     @Override
     public String toString() {
         if (ENVIRONMENT == Environment.DEVELOPMENT) {
-            return String.format("(%d; %d)\n", x, y);
+            return String.format("(%f; %f)\n", x, y);
         } else {
-            return String.format("points.add(new Point(%d, %d));\n", x, y);
+            return String.format("points.add(new Point(%f, %f));\n", x, y);
 //            return "Point{" +
 //                    "x=" + x +
 //                    ", y=" + y +
