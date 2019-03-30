@@ -280,7 +280,7 @@ public class CondMinFind {
         Matrix aTInv = aAt.inverse();
 
         Matrix atAtInv = aT.mul(aTInv);
-        Vector deltaX = atAtInv.transpose().mul(step);
+        Vector deltaX = step.mul(atAtInv.transpose());
 
         x = x.add(deltaX);
 
