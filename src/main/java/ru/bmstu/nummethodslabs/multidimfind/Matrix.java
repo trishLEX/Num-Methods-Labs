@@ -53,7 +53,19 @@ public class Matrix extends Array2DRowRealMatrix {
     }
 
     public Vector mul(Vector vector) {
-        return new Vector(super.preMultiply(vector.getData()));
+        if (getColumnDimension() != vector.size()) {
+            throw new IllegalArgumentException("Wrong sizes");
+        }
+        double[] data = new double[getRowDimension()];
+        for (int i = 0; i < getRowDimension(); i++) {
+            double sum = 0;
+            for (int j = 0; j < getColumnDimension(); j++) {
+                sum += getDataRef()[i][j] * vector.getData()[j];
+            }
+            data[i] = sum;
+        }
+
+        return new Vector(data);
     }
 
     public Matrix add(Matrix other) {
@@ -149,6 +161,19 @@ public class Matrix extends Array2DRowRealMatrix {
         }
 
         return new Matrix(temp);
+    }
+
+    public Matrix slice(int fromRowInclusive, int toRowExclusive, int fromColumnInclusive, int toColumnExclusive) {
+        double[][] rows = Arrays.copyOfRange(getDataRef(), fromRowInclusive, toRowExclusive);
+        for (int i = 0; i < rows[0].length; i++) {
+            rows[i] = Arrays.copyOfRange(rows[i], fromColumnInclusive, toColumnExclusive);
+        }
+
+        return new Matrix(rows);
+    }
+
+    public Vector row(int i) {
+        return new Vector(getDataRef()[i]);
     }
 
     @Override

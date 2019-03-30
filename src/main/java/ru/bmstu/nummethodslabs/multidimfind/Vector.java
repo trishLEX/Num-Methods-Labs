@@ -9,6 +9,10 @@ public class Vector {
         this.data = data;
     }
 
+    public Vector(int n) {
+        this.data = new double[n];
+    }
+
     public double norm() {
         double res = 0;
         for (double datum : data) {
@@ -39,6 +43,10 @@ public class Vector {
         return new Matrix(data);
     }
 
+    public Vector mul(Matrix matrix) {
+        return new Vector(matrix.preMultiply(this.getData()));
+    }
+
     public Vector div(double scalar) {
         return mul(1 / scalar);
     }
@@ -59,6 +67,10 @@ public class Vector {
         }
 
         return new Vector(x);
+    }
+
+    public Vector slice(int fromInclusive, int toExclusive) {
+        return new Vector(Arrays.copyOfRange(data, fromInclusive, toExclusive));
     }
 
     public Vector copy() {
