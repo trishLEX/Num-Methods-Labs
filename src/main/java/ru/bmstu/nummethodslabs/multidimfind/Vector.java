@@ -1,12 +1,20 @@
 package ru.bmstu.nummethodslabs.multidimfind;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Vector {
     private double[] data;
 
     public Vector(double ... data) {
         this.data = data;
+    }
+
+    public Vector(List<Double> data) {
+        this.data = new double[data.size()];
+        for (int i = 0; i < data.size(); i++) {
+            this.data[i] = data.get(i);
+        }
     }
 
     public Vector(int n) {

@@ -314,18 +314,18 @@ public class CondMinFind {
         Vector ideal = new Vector(1, 1, 1, 1);
 
         Vector penaltyFunction = penaltyFunctionsMethod(start, 1, 4);
-        System.out.println("PENALTY METHOD RES: " + penaltyFunction + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(penaltyFunction)));
+        System.out.println("PENALTY METHOD RES: " + rosenbrock(penaltyFunction) + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(penaltyFunction)));
 
         Vector barrierMethod = barrierMethod(start, 1, 10);
-        System.out.println("BARRIER METHOD RES: " + barrierMethod + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(barrierMethod)));
+        System.out.println("BARRIER METHOD RES: " + rosenbrock(barrierMethod) + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(barrierMethod)));
 
         Vector mixedMethod = mixedMethod(start, 1, 10);
-        System.out.println("MIXED METHOD RES: " + mixedMethod + " ERROR " + Math.abs(rosenbrock(ideal) - rosenbrock(mixedMethod)));
+        System.out.println("MIXED METHOD RES: " + rosenbrock(mixedMethod) + " ERROR " + Math.abs(rosenbrock(ideal) - rosenbrock(mixedMethod)));
 
         Vector lagrange = modifiedLagrangeMethod(start, 1, 4, List.of(-0.33, 10.0, 10.0, 1.0, 10.0));
-        System.out.println("MODIFIED LAGRANGE METHOD RES: " + lagrange + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(lagrange)));
+        System.out.println("MODIFIED LAGRANGE METHOD RES: " + rosenbrock(lagrange) + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(lagrange)));
 
         Vector gradients = gradientsProjection(start);
-        System.out.println("GRADIENT METHOD RES: " + gradients + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(gradients)));
+        System.out.println("GRADIENT METHOD RES: " + rosenbrock(gradients) + " ERROR: " + Math.abs(rosenbrock(ideal) - rosenbrock(gradients)));
     }
 }

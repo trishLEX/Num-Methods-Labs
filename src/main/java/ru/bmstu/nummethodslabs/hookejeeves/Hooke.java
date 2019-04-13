@@ -1,6 +1,9 @@
 package ru.bmstu.nummethodslabs.hookejeeves;
 
 import ru.bmstu.nummethodslabs.MinFind;
+import ru.bmstu.nummethodslabs.multidimfind.Vector;
+
+import java.util.function.Function;
 
 public class Hooke {
     /** Constant. The maximum number of variables. */
@@ -26,30 +29,30 @@ public class Hooke {
      */
     private static final int METHOD = 2;
 
-    private double bestNearby(double[] point) {
+    private double bestNearby(double[] point, Function<Vector, Double> function) {
         double[] z = new double[VARS];
 
         System.arraycopy(point, 0, z, 0, VARS);
 
         for (int i = 0; i < VARS; i++) {
-            double[] segment = MinFind.svenn(1, 0.001, x -> rosenbrock(z));
+            double[] segment = MinFind.svenn(1, 0.001, x -> function.apply(new Vector(z)));
 
             switch (METHOD) {
                 case 0:
-                    z[i] = MinFind.bisection(segment[0], segment[1], 0, x -> rosenbrock(z));
+                    z[i] = MinFind.bisection(segment[0], segment[1], 0, x -> function.apply(new Vector(z)));
                     break;
                 case 1:
-                    z[i] = MinFind.golden(segment[0], segment[1], 0, x -> rosenbrock(z));
+                    z[i] = MinFind.golden(segment[0], segment[1], 0, x -> function.apply(new Vector(z)));
                     break;
                 case 2:
-                    z[i] = MinFind.fibonacci(segment[0], segment[1], x -> rosenbrock(z));
+                    z[i] = MinFind.fibonacci(segment[0], segment[1], x -> function.apply(new Vector(z)));
                     break;
             }
         }
 
         System.arraycopy(z, 0, point, 0, VARS);
 
-        return rosenbrock(z);
+        return function.apply(new Vector(z));
     }
 
     public int hooke(final int nVars,
@@ -57,7 +60,8 @@ public class Hooke {
                      final double[] endPt,
                      final double rho,
                      final double epsilon,
-                     final int iterMax) {
+                     final int iterMax,
+                     Function<Vector, Double> function) {
 
         int i;
         int iAdj;
@@ -87,7 +91,7 @@ public class Hooke {
         stepLength = rho;
         iters      = 0;
 
-        fBefore = rosenbrock(newX);
+        fBefore = function.apply(new Vector(newX));
 
         newF = fBefore;
 
@@ -95,15 +99,11 @@ public class Hooke {
             iters++;
             iAdj++;
 
-            for (j = 0; j < nVars; j++) {
-                System.out.printf("   x[%2d] = %.4e\n", j, xBefore[j]);
-            }
-
             for (i = 0; i < nVars; i++) {
                 newX[i] = xBefore[i];
             }
 
-            newF = bestNearby(newX);
+            newF = bestNearby(newX, function);
 
             keep = 1;
 
@@ -124,7 +124,7 @@ public class Hooke {
 
                 fBefore = newF;
 
-                newF = bestNearby(newX);
+                newF = bestNearby(newX, function);
 
                 if (newF >= fBefore) {
                     break;
@@ -159,7 +159,8 @@ public class Hooke {
         return iters;
     }
 
-    private static double rosenbrock(double[] x){
+    private static double rosenbrock(Vector data){
+        double[] x = data.getData();
         double sum = 80;
         double a = 30;
         double b = 2;
@@ -190,7 +191,7 @@ public class Hooke {
         epsilon                   = Hooke.EPSMIN;
 
         jj = hooke.hooke(
-                nVars, startPt, endPt, rho, epsilon, iterMax
+                nVars, startPt, endPt, rho, epsilon, iterMax, Hooke::rosenbrock
         );
 
         System.out.println(
@@ -201,7 +202,7 @@ public class Hooke {
             System.out.printf("%f\n", endPt[i]);
         }
 
-        System.out.println(rosenbrock(endPt));
-        System.out.println(rosenbrock(new double[]{1, 1, 1, 1}) - rosenbrock(endPt));
+        System.out.println(rosenbrock(new Vector(endPt)));
+        System.out.println(rosenbrock(new Vector(1, 1, 1, 1)) - rosenbrock(new Vector(endPt)));
     }
 }
