@@ -11,8 +11,28 @@ public class GA {
     private static final int BETA = 20;
     private static final Random RANDOM = new Random();
 
-    private static double f(double[] data) {
-        return Arrays.stream(data).map(datum -> datum * datum - 10 * Math.cos(2 * Math.PI * datum) + 10).sum();
+    private static double f(double[] vector) {
+        //return Arrays.stream(data).map(datum -> datum * datum - 10 * Math.cos(2 * Math.PI * datum) + 10).sum();
+        double[] phi = {-1.0/6.0, -2.0/6.0, -3.0/6.0};
+
+        double[][] xij = {
+                {4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0},
+                {4.0, 4.0, 4.0}
+        };
+
+        double sum = 0;
+        for (int i = 0; i < 3; i++) {
+            int finalI = i;
+            sum -= 2 / (phi[i] + 2 * IntStream
+                    .range(0, 3)
+                    .boxed()
+                    .map(j -> Math.pow(vector[j] - xij[finalI][j], 2))
+                    .reduce((p1, p2) -> p1 + p2)
+                    .orElseThrow());
+        }
+
+        return sum;
     }
 
     private static double[] fitness(double[][] population) {
