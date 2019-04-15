@@ -9,30 +9,11 @@ public class GA {
     private static final int NUM_PARENTS_MATING = 4;
     private static final int ALPHA = 0;
     private static final int BETA = 20;
+    private static final int GENERATION_COUNT = 100000;
     private static final Random RANDOM = new Random();
 
-    private static double f(double[] vector) {
-        //return Arrays.stream(data).map(datum -> datum * datum - 10 * Math.cos(2 * Math.PI * datum) + 10).sum();
-        double[] phi = {-1.0/6.0, -2.0/6.0, -3.0/6.0};
-
-        double[][] xij = {
-                {4.0, 4.0, 4.0},
-                {4.0, 4.0, 4.0},
-                {4.0, 4.0, 4.0}
-        };
-
-        double sum = 0;
-        for (int i = 0; i < 3; i++) {
-            int finalI = i;
-            sum -= 2 / (phi[i] + 2 * IntStream
-                    .range(0, 3)
-                    .boxed()
-                    .map(j -> Math.pow(vector[j] - xij[finalI][j], 2))
-                    .reduce((p1, p2) -> p1 + p2)
-                    .orElseThrow());
-        }
-
-        return sum;
+    private static double f(double[] data) {
+        return Arrays.stream(data).map(datum -> datum * datum - 10 * Math.cos(2 * Math.PI * datum) + 10).sum();
     }
 
     private static double[] fitness(double[][] population) {
@@ -82,29 +63,23 @@ public class GA {
 
     public static void main(String[] args) {
         double[][] population = new double[SOL_PER_POP][N];
-        List<Double> bestOutputs = new ArrayList<>();
         for (int i = 0; i < SOL_PER_POP; i++) {
             for (int j = 0; j < N; j++) {
                 population[i][j] = (BETA - ALPHA) * RANDOM.nextDouble() + ALPHA;
             }
         }
 
-        for (int genIdx = 0; genIdx < 1000; genIdx++) {
+        for (int genIdx = 0; genIdx < GENERATION_COUNT; genIdx++) {
             double[] fitness = fitness(population);
-
-            bestOutputs.add(Arrays.stream(fitness).max().orElseThrow());
 
             double[][] parents = mating(population, fitness, NUM_PARENTS_MATING);
             double[][] crossover = crossover(parents, SOL_PER_POP - parents.length);
             double[][] mutation = mutation(crossover);
 
-            for (int i = 0; i < parents.length; i++) {
-                population[i] = parents[i];
-            }
+            System.arraycopy(parents, 0, population, 0, parents.length);
 
-            for (int i = parents.length; i < population.length; i++) {
-                population[i] = mutation[i - parents.length];
-            }
+            if (population.length - parents.length >= 0)
+                System.arraycopy(mutation, 0, population, parents.length, population.length - parents.length);
         }
 
         double[] fitness = fitness(population);

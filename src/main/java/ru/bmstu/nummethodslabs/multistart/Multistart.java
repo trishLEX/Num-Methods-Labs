@@ -13,21 +13,21 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Multistart {
-    private static final double A = 2.0;
-    private static final double B = 2.0;
-    private static final double C = 1.0;
-    private static final double ALPHA = 3.0;
-    private static final double BETA = 10.0;
+    private static final double A = 1.0;
+    private static final double B = 1.0;
+    private static final double C = 2.0;
+    private static final double ALPHA = 0.0;
+    private static final double BETA = 8.0;
 
     private static double shekel(Vector x) {
-        double[] phi = {-1.0/6.0, -2.0/6.0, -3.0/6.0};
+        double[] phi = {-1.0/3.0, -1.0/3.0, -1.0/3.0};
 
         assert Arrays.stream(phi).reduce((p1, p2) -> p1 + p2).getAsDouble() == C;
 
         double[][] xij = {
-                {4.0, 4.0, 4.0},
-                {4.0, 4.0, 4.0},
-                {4.0, 4.0, 4.0}
+                {1.0, 1.0, 1.0},
+                {1.0, 1.0, 1.0},
+                {1.0, 1.0, 1.0}
         };
 
         double sum = 0;
@@ -82,7 +82,7 @@ public class Multistart {
             clusters.remove(points2);
         }
 
-        System.out.println("clusters: " + clusters.size());
+        //System.out.println("clusters: " + clusters.size());
         return clusters;
     }
 
@@ -111,7 +111,7 @@ public class Multistart {
             temp.add(IntStream.range(0, k).boxed().collect(Collectors.toList()));
         }
 
-        System.out.println(temp);
+        //System.out.println(temp);
 
         double step = (beta - alpha) / k;
         List<Vector> points = new ArrayList<>();
