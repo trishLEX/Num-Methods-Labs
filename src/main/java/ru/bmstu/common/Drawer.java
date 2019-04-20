@@ -1,7 +1,7 @@
 package ru.bmstu.common;
 
-import org.lwjgl.glfw.*;
-
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -11,6 +11,9 @@ public abstract class Drawer {
     public static final double[] GRAY  = {0.8, 0.8, 0.8};
     public static final double[] BLACK = {0.0, 0.0, 0.0};
     public static final double[] RED = {1.0, 0.0, 0.0};
+    public static final double[] GREEN = {0.0, 1.0, 0.0};
+    public static final double[] BLUE = {0.0, 0.0, 1.0};
+    public static final double[] YELLOW = {1.0, 1.0, 0.0};
 
     protected long window;
 
@@ -18,6 +21,10 @@ public abstract class Drawer {
         glClearColor(1, 1, 1, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+    }
+
+    protected void drawBody() {
+        //do nothing
     }
 
     public Drawer(int width, int height, String name) {
@@ -42,6 +49,7 @@ public abstract class Drawer {
     public void draw(){
         while (!GLFW.glfwWindowShouldClose(this.window)) {
             background();
+            drawBody();
 
             GLFW.glfwSwapBuffers(this.window);
             GLFW.glfwPollEvents();
